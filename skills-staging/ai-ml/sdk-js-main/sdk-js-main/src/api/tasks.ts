@@ -1,0 +1,256 @@
+import { HttpClient } from '../http/client';
+import { StreamableManager } from '../http/streamable';
+import { PollManager } from '../http/poll';
+import {
+  TaskDTO as Task,
+  ResourceStatusDTO,
+  ApiAppRunRequest,
+  TaskStatusCompleted,
+  TaskStatusFailed,
+  TaskStatusCancelled,
+  CursorListRequest,
+  CursorListResponse,
+} from '../types';
+import { parseStatus } from '../utils';
+
+export interface RunOptions {
+  /** Callback for real-time status updates */
+  onUpdate?: (update: Task) => void;
+  /** Callback for partial updates with list of changed fields */
+  onPartialUpdate?: (update: Task, fields: string[]) => void;
+  /** Wait for task completion (default: true) */
+  wait?: boolean;
+  /** Auto-reconnect on connection loss (default: true) */
+  autoReconnect?: boolean;
+  /** Maximum reconnection attempts (default: 5) */
+  maxReconnects?: number;
+  /** Delay between reconnection attempts in ms (default: 1000) */
+  reconnectDelayMs?: number;
+  /** Use SSE streaming (true) or polling (false). Overrides client default. */
+  stream?: boolean;
+  /** Polling interval in ms when stream is false. Overrides client default. */
+  pollIntervalMs?: number;
+}
+
+//TODO: This is ugly...
+function stripTask(task: Task): Task {
+  return {
+    ...task,
+    id: task.id,
+    created_at: task.created_at,
+    updated_at: task.updated_at,
+    input: task.input,
+    output: task.output,
+    logs: task.logs,
+    status: task.status,
+    session_id: task.session_id,
+  };
+}
+
+/**
+ * Tasks API
+ */
+export class TasksAPI {
+  constructor(private readonly http: HttpClient) { }
+
+  /**
+   * List tasks with cursor-based pagination
+   */
+  async list(params?: Partial<CursorListRequest>): Promise<CursorListResponse<Task>> {
+    return this.http.request<CursorListResponse<Task>>('post', '/tasks/list', { data: params });
+  }
+
+  /**
+   * List featured tasks with cursor-based pagination
+   */
+  async listFeatured(params?: Partial<CursorListRequest>): Promise<CursorListResponse<Task>> {
+    return this.http.request<CursorListResponse<Task>>('get', '/tasks/featured', { params });
+  }
+
+  /**
+   * Get a task by ID
+   */
+  async get(taskId: string): Promise<Task> {
+    return this.http.request<Task>('get', `/tasks/${taskId}`);
+  }
+
+  /**
+   * Create and run a task
+   */
+  async create(data: ApiAppRunRequest): Promise<Task> {
+    return this.http.request<Task>('post', '/apps/run', { data });
+  }
+
+  /**
+   * Delete a task
+   */
+  async delete(taskId: string): Promise<void> {
+    return this.http.request<void>('delete', `/tasks/${taskId}`);
+  }
+
+  /**
+   * Cancel a running task
+   */
+  async cancel(taskId: string): Promise<void> {
+    return this.http.request<void>('post', `/tasks/${taskId}/cancel`);
+  }
+
+  /**
+   * Create an EventSource for streaming task updates
+   */
+  stream(taskId: string) {
+    return this.http.createEventSource(`/tasks/${taskId}/stream`);
+  }
+
+  /**
+   * Run a task and optionally wait for completion
+   */
+  async run(
+    params: ApiAppRunRequest,
+    processedInput: unknown,
+    options: RunOptions = {}
+  ): Promise<Task> {
+    const {
+      onUpdate,
+      onPartialUpdate,
+      wait = true,
+      autoReconnect = true,
+      maxReconnects = 5,
+      reconnectDelayMs = 1000,
+    } = options;
+
+    const task = await this.http.request<Task>('post', '/apps/run', {
+      data: {
+        ...params,
+        input: processedInput,
+      },
+    });
+
+    // Return immediately if not waiting
+    if (!wait) {
+      return stripTask(task);
+    }
+
+    const useStream = options.stream ?? this.http.getStreamDefault();
+
+    if (!useStream) {
+      return this.pollUntilTerminal(task, options);
+    }
+
+    // Wait for completion with optional updates via NDJSON streaming
+    // Accumulate state across partial updates to preserve fields like session_id
+    let accumulatedTask = { ...task };
+    const { url, headers } = this.http.getStreamableConfig(`/tasks/${task.id}/stream`);
+
+    return new Promise<Task>((resolve, reject) => {
+      const streamManager = new StreamableManager<Task>({
+        url,
+        headers,
+        onData: (data) => {
+          // Merge new data, preserving existing fields if not in update
+          accumulatedTask = { ...accumulatedTask, ...data };
+          const stripped = stripTask(accumulatedTask);
+          onUpdate?.(stripped);
+
+          if (parseStatus(data.status) === TaskStatusCompleted) {
+            streamManager.stop();
+            resolve(stripped);
+          } else if (parseStatus(data.status) === TaskStatusFailed) {
+            streamManager.stop();
+            reject(new Error(data.error || 'task failed'));
+          } else if (parseStatus(data.status) === TaskStatusCancelled) {
+            streamManager.stop();
+            reject(new Error('task cancelled'));
+          }
+        },
+        onPartialData: (data, fields) => {
+          // Merge partial update, preserving fields not in this update
+          accumulatedTask = { ...accumulatedTask, ...data };
+          const stripped = stripTask(accumulatedTask);
+          onPartialUpdate?.(stripped, fields);
+
+          if (parseStatus(data.status) === TaskStatusCompleted) {
+            streamManager.stop();
+            resolve(stripped);
+          } else if (parseStatus(data.status) === TaskStatusFailed) {
+            streamManager.stop();
+            reject(new Error(data.error || 'task failed'));
+          } else if (parseStatus(data.status) === TaskStatusCancelled) {
+            streamManager.stop();
+            reject(new Error('task cancelled'));
+          }
+        },
+        onError: (error) => {
+          reject(error);
+          streamManager.stop();
+        },
+      });
+
+      streamManager.start();
+    });
+  }
+
+  /** Poll GET /tasks/{id}/status until terminal, full-fetch on status change. */
+  private pollUntilTerminal(task: Task, options: RunOptions): Promise<Task> {
+    const { onUpdate, maxReconnects = 5 } = options;
+    const intervalMs = options.pollIntervalMs ?? this.http.getPollIntervalMs();
+    let prevStatus = task.status;
+
+    return new Promise<Task>((resolve, reject) => {
+      const poller = new PollManager<ResourceStatusDTO>({
+        pollFunction: () => this.http.request<ResourceStatusDTO>('get', `/tasks/${task.id}/status`),
+        intervalMs,
+        maxRetries: maxReconnects,
+        onData: async (statusData) => {
+          if (statusData.status === prevStatus) return;
+          prevStatus = statusData.status;
+
+          // Status changed — fetch full task
+          try {
+            const fullTask = await this.http.request<Task>('get', `/tasks/${task.id}`);
+            const stripped = stripTask(fullTask);
+            onUpdate?.(stripped);
+
+            if (parseStatus(fullTask.status) === TaskStatusCompleted) {
+              poller.stop();
+              resolve(stripped);
+            } else if (parseStatus(fullTask.status) === TaskStatusFailed) {
+              poller.stop();
+              reject(new Error(fullTask.error || 'task failed'));
+            } else if (parseStatus(fullTask.status) === TaskStatusCancelled) {
+              poller.stop();
+              reject(new Error('task cancelled'));
+            }
+          } catch (err) {
+            poller.stop();
+            reject(err instanceof Error ? err : new Error(String(err)));
+          }
+        },
+        onError: (error) => {
+          reject(error);
+          poller.stop();
+        },
+      });
+
+      poller.start();
+    });
+  }
+
+  /**
+   * Update task visibility
+   */
+  async updateVisibility(taskId: string, visibility: string): Promise<Task> {
+    return this.http.request<Task>('post', `/tasks/${taskId}/visibility`, { data: { visibility } });
+  }
+
+  /**
+   * Feature/unfeature a task
+   */
+  async feature(taskId: string, featured: boolean): Promise<Task> {
+    return this.http.request<Task>('post', `/tasks/${taskId}/featured`, { data: { is_featured: featured } });
+  }
+}
+
+export function createTasksAPI(http: HttpClient): TasksAPI {
+  return new TasksAPI(http);
+}

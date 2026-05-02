@@ -1,0 +1,83 @@
+# Credentials & Secrets
+.credentials.json
+settings.local.json
+
+# Build artifacts & dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.backup.*
+
+# Caches & generated data
+cache/
+paste-cache/
+shell-snapshots/
+stats-cache.json
+statsig/
+file-history/
+
+# Logs & telemetry
+logs/
+telemetry/
+history.jsonl
+
+# Debug output
+debug/
+
+# Todos (local task state)
+todos/
+
+# Session data (large, regenerated)
+projects/
+sessions/
+session-env/
+
+# Task session data
+tasks/
+
+# Plans (session-specific)
+plans/
+
+# Local backups
+backups/
+
+# Plugin cache (large, re-downloadable)
+plugins/cache/
+plugins/data/
+plugins/everything-claude-code/
+
+# Claude internal files
+.claude.json
+.claude.json.backup
+.search-index/
+
+# Security warning state
+security_warnings_state_*.json
+
+# IDE integrations
+ide/
+.agents/
+.codex/
+.cursor/
+.opencode/
+ecc/
+
+# Plugin data (personal)
+marketplace.json
+plugin.json
+raycast-snippets.json
+plugins/install-counts-cache.json
+mcp-needs-auth-cache.json
+
+# Local state
+instincts/
+scheduled-tasks/
+teams/
+profiles/
+vercel-plugin-device-id
+vercel-plugin-telemetry-preference
+
+# State files
+state/

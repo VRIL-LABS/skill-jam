@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: SAP Community
+    url: https://community.sap.com/
+    about: Ask questions about SAP technologies on the SAP Community
+  - name: SAP Developer Center
+    url: https://developers.sap.com/
+    about: Official SAP developer resources and tutorials

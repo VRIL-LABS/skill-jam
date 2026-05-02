@@ -1,0 +1,29 @@
+{
+  "description": "SAC Planning validation and guidance hooks for ensuring correct API usage and planning best practices",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/dispatch.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/dispatch.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

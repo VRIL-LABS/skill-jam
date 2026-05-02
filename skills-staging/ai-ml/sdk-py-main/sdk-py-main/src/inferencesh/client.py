@@ -1,0 +1,1610 @@
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Callable, Generator, Union, Iterator, AsyncIterator, TYPE_CHECKING
+from dataclasses import dataclass
+import json
+import re
+import time
+import mimetypes
+import os
+from contextlib import AbstractContextManager, AbstractAsyncContextManager
+from typing import Protocol, runtime_checkable
+
+from .models.errors import APIError, RequirementsNotMetError
+from .types import TaskStatus, ChatMessageStatus
+
+# Terminal statuses where a task is considered "done"
+TERMINAL_STATUSES = {TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED}
+
+# Map string status names to TaskStatus enum (for future string-based API)
+_STATUS_STRING_MAP = {
+    "unknown": TaskStatus.UNKNOWN,
+    "received": TaskStatus.RECEIVED,
+    "queued": TaskStatus.QUEUED,
+    "dispatched": TaskStatus.DISPATCHED,
+    "preparing": TaskStatus.PREPARING,
+    "serving": TaskStatus.SERVING,
+    "setting_up": TaskStatus.SETTING_UP,
+    "running": TaskStatus.RUNNING,
+    "cancelling": TaskStatus.CANCELLING,
+    "uploading": TaskStatus.UPLOADING,
+    "completed": TaskStatus.COMPLETED,
+    "failed": TaskStatus.FAILED,
+    "cancelled": TaskStatus.CANCELLED,
+}
+
+
+def parse_status(status: Union[int, str, None]) -> Optional[TaskStatus]:
+    """Parse task status from int or string to TaskStatus enum.
+
+    Handles both current int-based API and future string-based API.
+    """
+    if status is None:
+        return None
+    if isinstance(status, int):
+        try:
+            return TaskStatus(status)
+        except ValueError:
+            return TaskStatus.UNKNOWN
+    if isinstance(status, str):
+        return _STATUS_STRING_MAP.get(status.lower(), TaskStatus.UNKNOWN)
+    return TaskStatus.UNKNOWN
+
+
+def is_terminal_status(status: Union[int, str, None]) -> bool:
+    """Check if a task status is terminal (completed, failed, or cancelled).
+
+    Handles both int and string status values.
+    Deprecated: For ChatMessage status, use is_message_ready() instead.
+    """
+    parsed = parse_status(status)
+    return parsed in TERMINAL_STATUSES if parsed else False
+
+
+def is_message_ready(status: str | None) -> bool:
+    """Check if a chat message status is terminal (ready, failed, or cancelled).
+    
+    Args:
+        status: The message status string (pending, ready, failed, cancelled)
+        
+    Returns:
+        True if the message has reached a terminal state.
+        Empty/None status is treated as "pending" (not terminal).
+    """
+    if not status:
+        return False
+    return status not in (ChatMessageStatus.PENDING, ChatMessageStatus.PENDING.value)
+
+
+if TYPE_CHECKING:
+    from .types import AgentConfig
+    from .agent import Agent, AsyncAgent
+
+
+class TaskStream(AbstractContextManager['TaskStream']):
+    """A context manager for streaming task updates.
+    
+    This class provides a Pythonic interface for handling streaming updates from a task.
+    It can be used either as a context manager or as an iterator.
+    
+    Example:
+        ```python
+        # As a context manager
+        with client.stream_task(task_id) as stream:
+            for update in stream:
+                print(f"Update: {update}")
+                
+        # As an iterator
+        for update in client.stream_task(task_id):
+            print(f"Update: {update}")
+        ```
+    """
+    def __init__(
+        self,
+        task: Dict[str, Any],
+        client: Any,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ):
+        self.task = task
+        self.client = client
+        self.task_id = task["id"]
+        self.auto_reconnect = auto_reconnect
+        self.max_reconnects = max_reconnects
+        self.reconnect_delay_ms = reconnect_delay_ms
+        self._final_task: Optional[Dict[str, Any]] = None
+        self._error: Optional[Exception] = None
+        
+    def __enter__(self) -> 'TaskStream':
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        pass
+        
+    def __iter__(self) -> Iterator[Dict[str, Any]]:
+        return self.stream()
+        
+    @property
+    def result(self) -> Optional[Dict[str, Any]]:
+        """The final task result if completed, None otherwise."""
+        return self._final_task
+        
+    @property
+    def error(self) -> Optional[Exception]:
+        """The error that occurred during streaming, if any."""
+        return self._error
+        
+    def stream(self) -> Iterator[Dict[str, Any]]:
+        """Stream updates for this task.
+
+        Yields:
+            Dict[str, Any]: Task update events
+
+        Raises:
+            RuntimeError: If the task fails or is cancelled
+        """
+        import time as _time
+        reconnects = 0
+        try:
+            while True:
+                try:
+                    for update in self.client._stream_updates(
+                        self.task_id,
+                        self.task,
+                    ):
+                        if isinstance(update, Exception):
+                            self._error = update
+                            raise update
+                        if parse_status(update.get("status")) == TaskStatus.COMPLETED:
+                            self._final_task = update
+                        yield update
+                except (ConnectionError, OSError) as exc:
+                    if not self.auto_reconnect or reconnects >= self.max_reconnects:
+                        raise
+                    reconnects += 1
+                    _time.sleep(self.reconnect_delay_ms / 1000.0)
+                    continue
+                # Stream ended normally — check if we got a terminal event
+                if self._final_task is not None or self._error is not None:
+                    break
+                # Stream ended without terminal event — reconnect
+                if not self.auto_reconnect or reconnects >= self.max_reconnects:
+                    break
+                reconnects += 1
+                _time.sleep(self.reconnect_delay_ms / 1000.0)
+        except Exception as exc:
+            self._error = exc
+            raise
+
+
+class AsyncTaskStream(AbstractAsyncContextManager['AsyncTaskStream']):
+    """An async context manager for streaming task updates.
+    
+    This class provides a Pythonic interface for handling streaming updates from a task.
+    It can be used either as an async context manager or as an async iterator.
+    
+    Example:
+        ```python
+        # As an async context manager
+        async with client.stream_task(task_id) as stream:
+            async for update in stream:
+                print(f"Update: {update}")
+                
+        # As an async iterator
+        async for update in client.stream_task(task_id):
+            print(f"Update: {update}")
+        ```
+    """
+    def __init__(
+        self,
+        task: Dict[str, Any],
+        client: Any,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ):
+        self.task = task
+        self.client = client
+        self.task_id = task["id"]
+        self.auto_reconnect = auto_reconnect
+        self.max_reconnects = max_reconnects
+        self.reconnect_delay_ms = reconnect_delay_ms
+        self._final_task: Optional[Dict[str, Any]] = None
+        self._error: Optional[Exception] = None
+        
+    async def __aenter__(self) -> 'AsyncTaskStream':
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        pass
+        
+    def __aiter__(self) -> AsyncIterator[Dict[str, Any]]:
+        return self.stream()
+        
+    @property
+    def result(self) -> Optional[Dict[str, Any]]:
+        """The final task result if completed, None otherwise."""
+        return self._final_task
+        
+    @property
+    def error(self) -> Optional[Exception]:
+        """The error that occurred during streaming, if any."""
+        return self._error
+        
+    async def stream(self) -> AsyncIterator[Dict[str, Any]]:
+        """Stream updates for this task.
+
+        Yields:
+            Dict[str, Any]: Task update events
+
+        Raises:
+            RuntimeError: If the task fails or is cancelled
+        """
+        import asyncio as _asyncio
+        reconnects = 0
+        try:
+            while True:
+                try:
+                    async for update in self.client._stream_updates(
+                        self.task_id,
+                        self.task,
+                    ):
+                        if isinstance(update, Exception):
+                            self._error = update
+                            raise update
+                        if parse_status(update.get("status")) == TaskStatus.COMPLETED:
+                            self._final_task = update
+                        yield update
+                except (ConnectionError, OSError) as exc:
+                    if not self.auto_reconnect or reconnects >= self.max_reconnects:
+                        raise
+                    reconnects += 1
+                    await _asyncio.sleep(self.reconnect_delay_ms / 1000.0)
+                    continue
+                # Stream ended normally — check if we got a terminal event
+                if self._final_task is not None or self._error is not None:
+                    break
+                # Stream ended without terminal event — reconnect
+                if not self.auto_reconnect or reconnects >= self.max_reconnects:
+                    break
+                reconnects += 1
+                await _asyncio.sleep(self.reconnect_delay_ms / 1000.0)
+        except Exception as exc:
+            self._error = exc
+            raise
+
+
+@runtime_checkable
+class TaskCallback(Protocol):
+    """Protocol for task streaming callbacks."""
+    def on_update(self, data: Dict[str, Any]) -> None:
+        """Called when a task update is received."""
+        ...
+
+    def on_error(self, error: Exception) -> None:
+        """Called when an error occurs during task execution."""
+        ...
+
+    def on_complete(self, task: Dict[str, Any]) -> None:
+        """Called when a task completes successfully."""
+        ...
+
+
+# Deliberately do lazy imports for requests/aiohttp to avoid hard dependency at import time
+def _require_requests():
+    try:
+        import requests  # type: ignore
+        return requests
+    except Exception as exc:  # pragma: no cover - dependency hint
+        raise RuntimeError(
+            "The 'requests' package is required for synchronous HTTP calls. Install with: pip install requests"
+        ) from exc
+
+
+async def _require_aiohttp():
+    try:
+        import aiohttp  # type: ignore
+        return aiohttp
+    except Exception as exc:  # pragma: no cover - dependency hint
+        raise RuntimeError(
+            "The 'aiohttp' package is required for async HTTP calls. Install with: pip install aiohttp"
+        ) from exc
+
+
+Base64_RE = re.compile(r"^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$")
+
+
+@dataclass
+class UploadFileOptions:
+    filename: Optional[str] = None
+    content_type: Optional[str] = None
+    path: Optional[str] = None
+    public: Optional[bool] = None
+
+
+class StreamManager:
+    """Simple SSE stream manager with optional auto-reconnect."""
+
+    def __init__(
+        self,
+        *,
+        create_event_source: Callable[[], Any],
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+        on_error: Optional[Callable[[Exception], None]] = None,
+        on_start: Optional[Callable[[], None]] = None,
+        on_stop: Optional[Callable[[], None]] = None,
+        on_data: Optional[Callable[[Dict[str, Any]], None]] = None,
+        on_partial_data: Optional[Callable[[Dict[str, Any], list[str]], None]] = None,
+    ) -> None:
+        self._create_event_source = create_event_source
+        self._auto_reconnect = auto_reconnect
+        self._max_reconnects = max_reconnects
+        self._reconnect_delay_ms = reconnect_delay_ms
+        self._on_error = on_error
+        self._on_start = on_start
+        self._on_stop = on_stop
+        self._on_data = on_data
+        self._on_partial_data = on_partial_data
+
+        self._stopped = False
+        self._reconnect_attempts = 0
+        self._had_successful_connection = False
+
+    def stop(self) -> None:
+        self._stopped = True
+        if self._on_stop:
+            self._on_stop()
+
+    def connect(self) -> None:
+        self._stopped = False
+        self._reconnect_attempts = 0
+        while not self._stopped:
+            try:
+                if self._on_start:
+                    self._on_start()
+                event_source = self._create_event_source()
+                try:
+                    for data in event_source:
+                        if self._stopped:
+                            break
+                        self._had_successful_connection = True
+                        
+                        # Handle generic messages through on_data callback
+                        # Try parsing as {data: T, fields: []} structure first
+                        if (
+                            isinstance(data, dict)
+                            and "data" in data
+                            and "fields" in data
+                            and isinstance(data.get("fields"), list)
+                        ):
+                            # Partial data structure detected
+                            if self._on_partial_data:
+                                self._on_partial_data(data["data"], data["fields"])
+                            elif self._on_data:
+                                # Fall back to on_data with just the data if on_partial_data not provided
+                                self._on_data(data["data"])
+                        elif self._on_data:
+                            # Otherwise treat the whole thing as data
+                            self._on_data(data)
+                        
+                        # Check again after processing in case callbacks stopped us
+                        if self._stopped:
+                            break
+                finally:
+                    # Clean up the event source if it has a close method
+                    try:
+                        if hasattr(event_source, 'close'):
+                            event_source.close()
+                    except Exception:
+                        raise
+
+                # If we're stopped or don't want to auto-reconnect, break immediately
+                if self._stopped or not self._auto_reconnect:
+                    break
+            except Exception as exc:  # noqa: BLE001
+                if self._on_error:
+                    self._on_error(exc)
+                if self._stopped:
+                    break
+                # If never connected and exceeded attempts, stop
+                if not self._had_successful_connection:
+                    self._reconnect_attempts += 1
+                    if self._reconnect_attempts > self._max_reconnects:
+                        break
+                time.sleep(self._reconnect_delay_ms / 1000.0)
+            else:
+                # Completed without exception - if we want to auto-reconnect only after success
+                if not self._auto_reconnect:
+                    break
+                time.sleep(self._reconnect_delay_ms / 1000.0)
+
+
+class Inference:
+    """Synchronous client for inference.sh API, mirroring the JS SDK behavior.
+
+    Args:
+        api_key (str): The API key for authentication
+        base_url (Optional[str]): Override the default API base URL
+        sse_chunk_size (Optional[int]): Chunk size for SSE reading (default: 8192 bytes)
+        sse_mode (Optional[str]): SSE reading mode ('iter_lines' or 'raw', default: 'iter_lines')
+
+    The client supports performance tuning for SSE (Server-Sent Events) through:
+    1. sse_chunk_size: Controls the buffer size for reading SSE data (default: 8KB)
+       - Larger values may improve performance but use more memory
+       - Can also be set via INFERENCE_SSE_READ_BYTES environment variable
+    2. sse_mode: Controls how SSE data is read ('iter_lines' or 'raw')
+       - 'iter_lines': Uses requests' built-in line iteration (default)
+       - 'raw': Uses lower-level socket reading
+       - Can also be set via INFERENCE_SSE_MODE environment variable
+
+    Example:
+        ```python
+        from inferencesh import inference
+
+        client = inference(api_key="...")
+
+        # Namespaced API (recommended)
+        result = client.tasks.run({"app": "okaris/flux@abc1", "input": {"prompt": "hello"}})
+        file = client.files.upload("/path/to/image.png")
+        agent = client.agents.create("okaris/assistant@abc123")
+
+        # Legacy API (still supported)
+        result = client.run({"app": "okaris/flux@abc1", "input": {"prompt": "hello"}})
+        ```
+    """
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: Optional[str] = None,
+        sse_chunk_size: Optional[int] = None,
+        sse_mode: Optional[str] = None,
+    ) -> None:
+        self._api_key = api_key
+        self._base_url = base_url or "https://api.inference.sh"
+
+        # SSE configuration with environment variable fallbacks
+        self._sse_mode = sse_mode or os.getenv("INFERENCE_SSE_MODE") or "iter_lines"
+        self._sse_mode = self._sse_mode.lower()
+
+        # Default to 8KB chunks, can be overridden by parameter or env var
+        try:
+            env_chunk_size = os.getenv("INFERENCE_SSE_READ_BYTES")
+            if sse_chunk_size is not None:
+                self._sse_read_bytes = sse_chunk_size
+            elif env_chunk_size is not None:
+                self._sse_read_bytes = int(env_chunk_size)
+            else:
+                self._sse_read_bytes = 8192  # 8KB default
+        except Exception:
+            self._sse_read_bytes = 8192  # Default to 8KB chunks on error
+
+        # Initialize namespaced APIs
+        from .api import TasksAPI, FilesAPI, AgentsAPI, SessionsAPI
+        self._tasks = TasksAPI(self)
+        self._files = FilesAPI(self)
+        self._agents = AgentsAPI(self)
+        self._sessions = SessionsAPI(self)
+
+    @property
+    def tasks(self) -> "TasksAPI":
+        """Tasks API namespace."""
+        from .api import TasksAPI
+        return self._tasks
+
+    @property
+    def files(self) -> "FilesAPI":
+        """Files API namespace."""
+        from .api import FilesAPI
+        return self._files
+
+    @property
+    def agents(self) -> "AgentsAPI":
+        """Agents API namespace."""
+        from .api import AgentsAPI
+        return self._agents
+
+    @property
+    def sessions(self) -> "SessionsAPI":
+        """Sessions API namespace."""
+        from .api import SessionsAPI
+        return self._sessions
+
+    # --------------- HTTP helpers ---------------
+    def _headers(self) -> Dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self._api_key}",
+        }
+
+    def _request(
+        self,
+        method: str,
+        endpoint: str,
+        *,
+        params: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        stream: bool = False,
+        timeout: Optional[float] = None,
+    ) -> Any:
+        requests = _require_requests()
+        url = f"{self._base_url}{endpoint}"
+        merged_headers = {**self._headers(), **(headers or {})}
+        resp = requests.request(
+            method=method.upper(),
+            url=url,
+            params=params,
+            data=json.dumps(data) if data is not None else None,
+            headers=merged_headers,
+            stream=stream,
+            timeout=timeout or 30,
+        )
+        if stream:
+            return resp
+        
+        # Get response text
+        response_text = resp.text
+        
+        # Try to parse as JSON
+        payload = None
+        try:
+            payload = json.loads(response_text) if response_text else None
+        except Exception:
+            pass
+        
+        # Check for HTTP errors first
+        if not resp.ok:
+            # Check for RequirementsNotMetError (412 with errors array)
+            if resp.status_code == 412 and payload and isinstance(payload, dict) and "errors" in payload:
+                raise RequirementsNotMetError.from_response(payload, resp.status_code)
+            
+            # General error handling
+            error_detail = None
+            if payload and isinstance(payload, dict):
+                if payload.get("error"):
+                    err = payload["error"]
+                    if isinstance(err, dict):
+                        error_detail = err.get("message") or json.dumps(err)
+                    else:
+                        error_detail = str(err)
+                elif payload.get("message"):
+                    error_detail = payload["message"]
+                else:
+                    # Include full payload if no standard error field
+                    error_detail = json.dumps(payload)
+            elif response_text:
+                error_detail = response_text[:500]
+            
+            raise APIError(resp.status_code, error_detail or "Request failed", response_text)
+        
+        # Handle 204 No Content responses (e.g., DELETE operations)
+        if resp.status_code == 204:
+            return None
+
+        if not isinstance(payload, dict) or not payload.get("success", False):
+            message = None
+            if isinstance(payload, dict) and payload.get("error"):
+                err = payload["error"]
+                if isinstance(err, dict):
+                    message = err.get("message")
+                else:
+                    message = str(err)
+            raise APIError(200, message or "Request failed", response_text)
+        return payload.get("data")
+
+    # --------------- Public API ---------------
+    def run(
+        self,
+        params: Dict[str, Any],
+        *,
+        wait: bool = True,
+        stream: bool = False,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ) -> Union[Dict[str, Any], TaskStream, Iterator[Dict[str, Any]]]:
+        """Run a task with optional streaming updates.
+        
+        By default, this method waits for the task to complete and returns the final result.
+        You can set wait=False to get just the task info, or stream=True to get an iterator
+        of status updates.
+        
+        App Reference Format:
+            ``namespace/name@shortid`` or ``namespace/name@shortid:function``
+            
+            The short ID ensures your code always runs the same version.
+            You can optionally specify a function name to run a specific entry point.
+        
+        Args:
+            params: Task parameters including:
+                - app: App reference with version (e.g., "okaris/flux@abc1")
+                - input: Input data for the app
+                - setup: Optional setup parameters (affects worker warmth/scheduling)
+                - variant: Optional variant name
+            wait: Whether to wait for task completion (default: True)
+            stream: Whether to return an iterator of updates (default: False)
+            auto_reconnect: Whether to automatically reconnect on connection loss
+            max_reconnects: Maximum number of reconnection attempts
+            reconnect_delay_ms: Delay between reconnection attempts in milliseconds
+            
+        Returns:
+            Union[Dict[str, Any], TaskStream, Iterator[Dict[str, Any]]]:
+                - If wait=True and stream=False: The completed task data
+                - If wait=False: The created task info
+                - If stream=True: An iterator of task updates
+            
+        Example:
+            ```python
+            # Run with pinned version (required)
+            result = client.run({
+                "app": "okaris/flux@abc1",  # version @abc1 is pinned
+                "input": {"prompt": "hello"}
+            })
+            print(f"Output: {result['output']}")
+            
+            # Get task info without waiting
+            task = client.run(params, wait=False)
+            task_id = task["id"]
+            
+            # Stream updates
+            stream = client.run(params, stream=True)
+            for update in stream:
+                print(f"Status: {update.get('status')}")
+                if parse_status(update.get('status')) == TaskStatus.COMPLETED:
+                    print(f"Result: {update.get('output')}")
+            ```
+        """
+        # Create the task
+        processed_input = self._process_input_data(params.get("input"))
+        task = self._request("post", "/apps/run", data={**params, "input": processed_input})
+        
+        # Return immediately if not waiting
+        if not wait and not stream:
+            return _strip_task(task)
+            
+        # Return stream if requested
+        if stream:
+            task_stream = TaskStream(
+                task=task,
+                client=self,
+                auto_reconnect=auto_reconnect,
+                max_reconnects=max_reconnects,
+                reconnect_delay_ms=reconnect_delay_ms,
+            )
+            return task_stream
+            
+        # Otherwise wait for completion
+        return self.wait_for_completion(task["id"])
+
+
+
+    def cancel(self, task_id: str) -> None:
+        self._request("post", f"/tasks/{task_id}/cancel")
+
+    def get_task(self, task_id: str) -> Dict[str, Any]:
+        """Get the current state of a task.
+        
+        Args:
+            task_id: The ID of the task to get
+            
+        Returns:
+            Dict[str, Any]: The current task state
+        """
+        return self._request("get", f"/tasks/{task_id}")
+
+    def wait_for_completion(self, task_id: str) -> Dict[str, Any]:
+        """Wait for a task to complete and return its final state.
+        
+        This method polls the task status until it reaches a terminal state
+        (completed, failed, or cancelled).
+        
+        Args:
+            task_id: The ID of the task to wait for
+            
+        Returns:
+            Dict[str, Any]: The final task state
+            
+        Raises:
+            RuntimeError: If the task fails or is cancelled
+        """
+        with self.stream_task(task_id) as stream:
+            for update in stream:
+                status = parse_status(update.get("status"))
+                if status == TaskStatus.COMPLETED:
+                    return update
+                if status == TaskStatus.FAILED:
+                    raise RuntimeError(update.get("error") or "Task failed")
+                if status == TaskStatus.CANCELLED:
+                    raise RuntimeError("Task cancelled")
+        raise RuntimeError("Stream ended without completion")
+
+    # --------------- File upload ---------------
+    def upload_file(self, data: Union[str, bytes], options: Optional[UploadFileOptions] = None) -> Dict[str, Any]:
+        options = options or UploadFileOptions()
+        content_type = options.content_type
+        raw_bytes: bytes
+        if isinstance(data, bytes):
+            raw_bytes = data
+            if not content_type:
+                content_type = "application/octet-stream"
+        else:
+            # Prefer local filesystem path if it exists
+            if os.path.exists(data):
+                path = data
+                guessed = mimetypes.guess_type(path)[0]
+                content_type = content_type or guessed or "application/octet-stream"
+                with open(path, "rb") as f:
+                    raw_bytes = f.read()
+                if not options.filename:
+                    options.filename = os.path.basename(path)
+            elif data.startswith("data:"):
+                # data URI
+                match = re.match(r"^data:([^;]+);base64,(.+)$", data)
+                if not match:
+                    raise ValueError("Invalid base64 data URI format")
+                content_type = content_type or match.group(1)
+                raw_bytes = _b64_to_bytes(match.group(2))
+            elif _looks_like_base64(data):
+                raw_bytes = _b64_to_bytes(data)
+                content_type = content_type or "application/octet-stream"
+            else:
+                raise ValueError("upload_file expected bytes, data URI, base64 string, or existing file path")
+
+        file_req = {
+            "files": [
+                {
+                    "uri": "",
+                    "filename": options.filename,
+                    "content_type": content_type,
+                    "path": options.path,
+                    "size": len(raw_bytes),
+                    "public": options.public,
+                }
+            ]
+        }
+
+        created = self._request("post", "/files", data=file_req)
+        file_obj = created[0]
+        upload_url = file_obj.get("upload_url")
+        if not upload_url:
+            raise RuntimeError("No upload URL provided by the server")
+
+        # Upload to S3 (or compatible) signed URL
+        requests = _require_requests()
+        put_resp = requests.put(upload_url, data=raw_bytes, headers={"Content-Type": content_type})
+        if not (200 <= put_resp.status_code < 300):
+            raise RuntimeError(f"Failed to upload file content: {put_resp.reason}")
+        return file_obj
+
+    # --------------- Helpers ---------------
+    def stream_task(
+        self,
+        task_id: str,
+        *,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ) -> TaskStream:
+        """Create a TaskStream for getting streaming updates from a task.
+        
+        This provides a more Pythonic interface for handling task updates compared to callbacks.
+        The returned TaskStream can be used either as a context manager or as an iterator.
+        
+        Args:
+            task_id: The ID of the task to stream
+            auto_reconnect: Whether to automatically reconnect on connection loss
+            max_reconnects: Maximum number of reconnection attempts
+            reconnect_delay_ms: Delay between reconnection attempts in milliseconds
+            
+        Returns:
+            TaskStream: A stream interface for the task
+            
+        Example:
+            ```python
+            # Run a task
+            task = client.run(params)
+            
+            # Stream updates using context manager
+            with client.stream_task(task["id"]) as stream:
+                for update in stream:
+                    print(f"Status: {update.get('status')}")
+                    if parse_status(update.get("status")) == TaskStatus.COMPLETED:
+                        print(f"Result: {update.get('output')}")
+                        
+            # Or use as a simple iterator
+            for update in client.stream_task(task["id"]):
+                print(f"Update: {update}")
+            ```
+        """
+        task = self.get_task(task_id)
+        return TaskStream(
+            task=task,
+            client=self,
+            auto_reconnect=auto_reconnect,
+            max_reconnects=max_reconnects,
+            reconnect_delay_ms=reconnect_delay_ms,
+        )
+
+    def _stream_updates(
+        self,
+        task_id: str,
+        task: Dict[str, Any],
+    ) -> Generator[Union[Dict[str, Any], Exception], None, None]:
+        """Internal method to stream task updates."""
+        url = f"/tasks/{task_id}/stream"
+        resp = self._request(
+            "get",
+            url,
+            headers={
+                "Accept": "application/x-ndjson",
+                "Cache-Control": "no-cache",
+                "Accept-Encoding": "identity",
+                "Connection": "keep-alive",
+            },
+            stream=True,
+            timeout=60,
+        )
+        try:
+            for evt in self._iter_ndjson(resp):
+                try:
+                    # Process the event to check for completion/errors
+                    result = _process_stream_event(
+                        evt,
+                        task=task,
+                        stopper=None,  # We'll handle stopping via the iterator
+                    )
+                    if result is not None:
+                        yield result
+                        break
+                    yield _strip_task(evt)
+                except Exception as exc:
+                    yield exc
+                    raise
+        finally:
+            try:
+                # Force close the underlying socket if possible
+                try:
+                    raw = getattr(resp, 'raw', None)
+                    if raw is not None:
+                        raw.close()
+                except Exception:
+                    raise
+                # Close the response
+                resp.close()
+            except Exception:
+                raise
+
+    def _iter_ndjson(self, resp: Any, stream_manager: Optional[Any] = None) -> Generator[Dict[str, Any], None, None]:
+        """Iterate JSON objects from an NDJSON response."""
+        for line in resp.iter_lines(decode_unicode=True, chunk_size=8192):
+            # Check if we've been asked to stop
+            try:
+                if stream_manager and stream_manager._stopped:  # type: ignore[attr-defined]
+                    break
+            except Exception:
+                raise
+
+            if not line:
+                continue
+
+            line = line.strip()
+            if not line:
+                continue
+
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            # Skip heartbeats
+            if isinstance(parsed, dict) and parsed.get("type") == "heartbeat":
+                continue
+
+            # Unwrap data if present (partial update format)
+            if isinstance(parsed, dict) and "data" in parsed and "fields" in parsed:
+                yield parsed["data"]
+            else:
+                yield parsed
+
+    def _process_input_data(self, input_value: Any, path: str = "root") -> Any:
+        if input_value is None:
+            return input_value
+
+        # Handle lists
+        if isinstance(input_value, list):
+            return [self._process_input_data(item, f"{path}[{idx}]") for idx, item in enumerate(input_value)]
+
+        # Handle dicts
+        if isinstance(input_value, dict):
+            processed: Dict[str, Any] = {}
+            for key, value in input_value.items():
+                processed[key] = self._process_input_data(value, f"{path}.{key}")
+            return processed
+
+        # Handle strings that are filesystem paths, data URIs, or base64
+        if isinstance(input_value, str):
+            # Prefer existing local file paths first to avoid misclassifying plain strings
+            if os.path.exists(input_value):
+                file_obj = self.upload_file(input_value)
+                return file_obj.get("uri")
+            if input_value.startswith("data:") or _looks_like_base64(input_value):
+                file_obj = self.upload_file(input_value)
+                return file_obj.get("uri")
+            return input_value
+
+        # Handle File-like objects from our models
+        try:
+            from .models.file import File as SDKFile  # local import to avoid cycle
+            if isinstance(input_value, SDKFile):
+                # Prefer local path if present, else uri
+                src = input_value.path or input_value.uri
+                if not src:
+                    return input_value
+                file_obj = self.upload_file(src, UploadFileOptions(filename=input_value.filename, content_type=input_value.content_type))
+                return file_obj.get("uri")
+        except Exception:
+            raise
+
+        return input_value
+
+    def agent(self, config: Union[str, "AgentConfig"]) -> "Agent":
+        """Create an agent for chat interactions.
+
+        Args:
+            config: Either a template reference string (namespace/name@version) or ad-hoc config
+
+        Returns:
+            An Agent instance for chat operations
+
+        Example:
+            ```python
+            # Template agent
+            agent = client.agent('okaris/assistant@abc123')
+
+            # Ad-hoc agent
+            agent = client.agent({
+                'core_app': { 'ref': 'infsh/claude-sonnet-4@xyz789' },
+                'system_prompt': 'You are a helpful assistant',
+            })
+
+            # Send messages
+            response = agent.send_message('Hello!')
+            ```
+        """
+        from .agent import Agent
+
+        return Agent(self, config)
+
+    def session(self, app: str, **kwargs: Any) -> "SessionHandle":
+        """Create a session context manager for stateful interactions.
+
+        Args:
+            app: App reference (e.g., "namespace/name@version")
+            **kwargs: Additional parameters for the initial call
+
+        Returns:
+            A SessionHandle context manager
+
+        Example:
+            ```python
+            with client.session("browser-app@abc123") as session:
+                session.call("navigate", {"url": "https://example.com"})
+                session.call("click", {"selector": "#button"})
+                result = session.call("screenshot", {})
+            # Session automatically ended
+            ```
+        """
+        from .api import SessionHandle
+
+        # Create session with initial call
+        result = self.run({
+            "app": app,
+            "input": kwargs.get("input", {}),
+            "function": kwargs.get("function", "run"),
+            "session": "new",
+        })
+        session_id = result.get("session_id")
+        if not session_id:
+            raise RuntimeError("Failed to create session: no session_id returned")
+        return SessionHandle(self, app, session_id)
+
+
+class AsyncInference:
+    """Async client for inference.sh API, mirroring the JS SDK behavior.
+
+    Example:
+        ```python
+        from inferencesh import async_inference
+
+        client = async_inference(api_key="...")
+
+        # Namespaced API (recommended)
+        result = await client.tasks.run({"app": "okaris/flux@abc1", "input": {"prompt": "hello"}})
+        file = await client.files.upload("/path/to/image.png")
+        agent = client.agents.create("okaris/assistant@abc123")
+
+        # Legacy API (still supported)
+        result = await client.run({"app": "okaris/flux@abc1", "input": {"prompt": "hello"}})
+        ```
+    """
+
+    def __init__(self, *, api_key: str, base_url: Optional[str] = None) -> None:
+        self._api_key = api_key
+        self._base_url = base_url or "https://api.inference.sh"
+
+        # Initialize namespaced APIs
+        from .api import AsyncTasksAPI, AsyncFilesAPI, AsyncAgentsAPI, AsyncSessionsAPI
+        self._tasks = AsyncTasksAPI(self)
+        self._files = AsyncFilesAPI(self)
+        self._agents = AsyncAgentsAPI(self)
+        self._sessions = AsyncSessionsAPI(self)
+
+    @property
+    def tasks(self) -> "AsyncTasksAPI":
+        """Tasks API namespace."""
+        from .api import AsyncTasksAPI
+        return self._tasks
+
+    @property
+    def files(self) -> "AsyncFilesAPI":
+        """Files API namespace."""
+        from .api import AsyncFilesAPI
+        return self._files
+
+    @property
+    def agents(self) -> "AsyncAgentsAPI":
+        """Agents API namespace."""
+        from .api import AsyncAgentsAPI
+        return self._agents
+
+    @property
+    def sessions(self) -> "AsyncSessionsAPI":
+        """Sessions API namespace."""
+        from .api import AsyncSessionsAPI
+        return self._sessions
+
+    # --------------- HTTP helpers ---------------
+    def _headers(self) -> Dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self._api_key}",
+        }
+
+    async def _request(
+        self,
+        method: str,
+        endpoint: str,
+        *,
+        params: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        expect_stream: bool = False,
+    ) -> Any:
+        aiohttp = await _require_aiohttp()
+        url = f"{self._base_url}{endpoint}"
+        merged_headers = {**self._headers(), **(headers or {})}
+        timeout_cfg = aiohttp.ClientTimeout(total=timeout or 30)
+        async with aiohttp.ClientSession(timeout=timeout_cfg) as session:
+            async with session.request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                json=data,
+                headers=merged_headers,
+            ) as resp:
+                if expect_stream:
+                    return resp
+                # Read response body as text first (can only read once)
+                response_text = await resp.text()
+                
+                # Try to parse as JSON
+                payload = None
+                try:
+                    payload = json.loads(response_text) if response_text else None
+                except Exception:
+                    pass
+                
+                # Check for HTTP errors first
+                if not resp.ok:
+                    # Check for RequirementsNotMetError (412 with errors array)
+                    if resp.status == 412 and payload and isinstance(payload, dict) and "errors" in payload:
+                        raise RequirementsNotMetError.from_response(payload, resp.status)
+                    
+                    # General error handling
+                    error_detail = None
+                    if payload and isinstance(payload, dict):
+                        if payload.get("error"):
+                            err = payload["error"]
+                            if isinstance(err, dict):
+                                error_detail = err.get("message") or json.dumps(err)
+                            else:
+                                error_detail = str(err)
+                        elif payload.get("message"):
+                            error_detail = payload["message"]
+                        else:
+                            # Include full payload if no standard error field
+                            error_detail = json.dumps(payload)
+                    elif response_text:
+                        error_detail = response_text[:500]
+                    
+                    raise APIError(resp.status, error_detail or "Request failed", response_text)
+
+                # Handle 204 No Content responses (e.g., DELETE operations)
+                if resp.status == 204:
+                    return None
+
+                if not isinstance(payload, dict) or not payload.get("success", False):
+                    message = None
+                    if isinstance(payload, dict) and payload.get("error"):
+                        err = payload["error"]
+                        if isinstance(err, dict):
+                            message = err.get("message")
+                        else:
+                            message = str(err)
+                    raise APIError(resp.status, message or "Request failed", response_text)
+                return payload.get("data")
+
+    # --------------- Public API ---------------
+    async def run(
+        self,
+        params: Dict[str, Any],
+        *,
+        wait: bool = True,
+        stream: bool = False,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ) -> Union[Dict[str, Any], AsyncTaskStream]:
+        """Run a task with optional streaming updates.
+        
+        By default, this method waits for the task to complete and returns the final result.
+        You can set wait=False to get just the task info, or stream=True to get an async iterator
+        of status updates.
+        
+        App Reference Format:
+            ``namespace/name@shortid`` (version is required)
+            
+            The short ID ensures your code always runs the same version,
+            protecting against breaking changes from app updates.
+        
+        Args:
+            params: Task parameters including:
+                - app: App reference with version (e.g., "okaris/flux@abc1")
+                - input: Input data for the app
+                - setup: Optional setup parameters (affects worker warmth/scheduling)
+                - variant: Optional variant name
+            wait: Whether to wait for task completion (default: True)
+            stream: Whether to return an async iterator of updates (default: False)
+            auto_reconnect: Whether to automatically reconnect on connection loss
+            max_reconnects: Maximum number of reconnection attempts
+            reconnect_delay_ms: Delay between reconnection attempts in milliseconds
+            
+        Returns:
+            Union[Dict[str, Any], AsyncTaskStream]:
+                - If wait=True and stream=False: The completed task data
+                - If wait=False: The created task info
+                - If stream=True: An async iterator of task updates
+            
+        Example:
+            ```python
+            # Run with pinned version (required)
+            result = await client.run({
+                "app": "okaris/flux@abc1",  # version @abc1 is pinned
+                "input": {"prompt": "hello"}
+            })
+            print(f"Output: {result['output']}")
+            
+            # Get task info without waiting
+            task = await client.run(params, wait=False)
+            task_id = task["id"]
+            
+            # Stream updates
+            async for update in await client.run(params, stream=True):
+                print(f"Status: {update.get('status')}")
+                if parse_status(update.get('status')) == TaskStatus.COMPLETED:
+                    print(f"Result: {update.get('output')}")
+            ```
+        """
+        # Create the task
+        processed_input = await self._process_input_data(params.get("input"))
+        task = await self._request("post", "/apps/run", data={**params, "input": processed_input})
+        
+        # Return immediately if not waiting
+        if not wait and not stream:
+            return _strip_task(task)
+            
+        # Return stream if requested
+        if stream:
+            return AsyncTaskStream(
+                task=task,
+                client=self,
+                auto_reconnect=auto_reconnect,
+                max_reconnects=max_reconnects,
+                reconnect_delay_ms=reconnect_delay_ms,
+            )
+            
+        # Otherwise wait for completion
+        return await self.wait_for_completion(task["id"])
+
+    async def cancel(self, task_id: str) -> None:
+        await self._request("post", f"/tasks/{task_id}/cancel")
+
+    async def get_task(self, task_id: str) -> Dict[str, Any]:
+        """Get the current state of a task.
+        
+        Args:
+            task_id: The ID of the task to get
+            
+        Returns:
+            Dict[str, Any]: The current task state
+        """
+        return await self._request("get", f"/tasks/{task_id}")
+
+    async def wait_for_completion(self, task_id: str) -> Dict[str, Any]:
+        """Wait for a task to complete and return its final state.
+        
+        This method streams the task status until it reaches a terminal state
+        (completed, failed, or cancelled).
+        
+        Args:
+            task_id: The ID of the task to wait for
+            
+        Returns:
+            Dict[str, Any]: The final task state
+            
+        Raises:
+            RuntimeError: If the task fails or is cancelled
+        """
+        async with self.stream_task(task_id) as stream:
+            async for update in stream:
+                status = parse_status(update.get("status"))
+                if status == TaskStatus.COMPLETED:
+                    return update
+                if status == TaskStatus.FAILED:
+                    raise RuntimeError(update.get("error") or "Task failed")
+                if status == TaskStatus.CANCELLED:
+                    raise RuntimeError("Task cancelled")
+        raise RuntimeError("Stream ended without completion")
+
+    def stream_task(
+        self,
+        task_id: str,
+        *,
+        auto_reconnect: bool = True,
+        max_reconnects: int = 5,
+        reconnect_delay_ms: int = 1000,
+    ) -> AsyncTaskStream:
+        """Create an AsyncTaskStream for getting streaming updates from a task.
+        
+        This provides a Pythonic interface for handling task updates.
+        The returned AsyncTaskStream can be used either as an async context manager 
+        or as an async iterator.
+        
+        Args:
+            task_id: The ID of the task to stream
+            auto_reconnect: Whether to automatically reconnect on connection loss
+            max_reconnects: Maximum number of reconnection attempts
+            reconnect_delay_ms: Delay between reconnection attempts in milliseconds
+            
+        Returns:
+            AsyncTaskStream: An async stream interface for the task
+            
+        Example:
+            ```python
+            # Run a task
+            task = await client.run(params, wait=False)
+            
+            # Stream updates using async context manager
+            async with client.stream_task(task["id"]) as stream:
+                async for update in stream:
+                    print(f"Status: {update.get('status')}")
+                    if parse_status(update.get("status")) == TaskStatus.COMPLETED:
+                        print(f"Result: {update.get('output')}")
+                        
+            # Or use as a simple async iterator
+            async for update in client.stream_task(task["id"]):
+                print(f"Update: {update}")
+            ```
+        """
+        # Create a minimal task dict with just the id for streaming
+        task = {"id": task_id}
+        return AsyncTaskStream(
+            task=task,
+            client=self,
+            auto_reconnect=auto_reconnect,
+            max_reconnects=max_reconnects,
+            reconnect_delay_ms=reconnect_delay_ms,
+        )
+
+    # --------------- File upload ---------------
+    async def upload_file(self, data: Union[str, bytes], options: Optional[UploadFileOptions] = None) -> Dict[str, Any]:
+        options = options or UploadFileOptions()
+        content_type = options.content_type
+        raw_bytes: bytes
+        if isinstance(data, bytes):
+            raw_bytes = data
+            if not content_type:
+                content_type = "application/octet-stream"
+        else:
+            if os.path.exists(data):
+                path = data
+                guessed = mimetypes.guess_type(path)[0]
+                content_type = content_type or guessed or "application/octet-stream"
+                async with await _aio_open_file(path, "rb") as f:
+                    raw_bytes = await f.read()  # type: ignore[attr-defined]
+                if not options.filename:
+                    options.filename = os.path.basename(path)
+            elif data.startswith("data:"):
+                match = re.match(r"^data:([^;]+);base64,(.+)$", data)
+                if not match:
+                    raise ValueError("Invalid base64 data URI format")
+                content_type = content_type or match.group(1)
+                raw_bytes = _b64_to_bytes(match.group(2))
+            elif _looks_like_base64(data):
+                raw_bytes = _b64_to_bytes(data)
+                content_type = content_type or "application/octet-stream"
+            else:
+                raise ValueError("upload_file expected bytes, data URI, base64 string, or existing file path")
+
+        file_req = {
+            "files": [
+                {
+                    "uri": "",
+                    "filename": options.filename,
+                    "content_type": content_type,
+                    "path": options.path,
+                    "size": len(raw_bytes),
+                    "public": options.public,
+                }
+            ]
+        }
+
+        created = await self._request("post", "/files", data=file_req)
+        file_obj = created[0]
+        upload_url = file_obj.get("upload_url")
+        if not upload_url:
+            raise RuntimeError("No upload URL provided by the server")
+
+        aiohttp = await _require_aiohttp()
+        timeout_cfg = aiohttp.ClientTimeout(total=60)
+        async with aiohttp.ClientSession(timeout=timeout_cfg) as session:
+            async with session.put(upload_url, data=raw_bytes, headers={"Content-Type": content_type}) as resp:
+                if resp.status // 100 != 2:
+                    raise RuntimeError(f"Failed to upload file content: {resp.reason}")
+        return file_obj
+
+    # --------------- Helpers ---------------
+    async def _process_input_data(self, input_value: Any, path: str = "root") -> Any:
+        if input_value is None:
+            return input_value
+
+        if isinstance(input_value, list):
+            return [await self._process_input_data(item, f"{path}[{idx}]") for idx, item in enumerate(input_value)]
+
+        if isinstance(input_value, dict):
+            processed: Dict[str, Any] = {}
+            for key, value in input_value.items():
+                processed[key] = await self._process_input_data(value, f"{path}.{key}")
+            return processed
+
+        if isinstance(input_value, str):
+            if os.path.exists(input_value):
+                file_obj = await self.upload_file(input_value)
+                return file_obj.get("uri")
+            if input_value.startswith("data:") or _looks_like_base64(input_value):
+                file_obj = await self.upload_file(input_value)
+                return file_obj.get("uri")
+            return input_value
+
+        try:
+            from .models.file import File as SDKFile  # local import
+            if isinstance(input_value, SDKFile):
+                src = input_value.path or input_value.uri
+                if not src:
+                    return input_value
+                file_obj = await self.upload_file(src, UploadFileOptions(filename=input_value.filename, content_type=input_value.content_type))
+                return file_obj.get("uri")
+        except Exception:
+            raise
+
+        return input_value
+
+    async def _stream_updates(
+        self,
+        task_id: str,
+        task: Dict[str, Any],
+    ) -> AsyncIterator[Union[Dict[str, Any], Exception]]:
+        """Internal method to stream task updates asynchronously."""
+        aiohttp = await _require_aiohttp()
+        url = f"{self._base_url}/tasks/{task_id}/stream"
+        headers = {
+            **self._headers(),
+            "Accept": "application/x-ndjson",
+            "Cache-Control": "no-cache",
+            "Accept-Encoding": "identity",
+            "Connection": "keep-alive",
+        }
+        timeout_cfg = aiohttp.ClientTimeout(total=60)
+
+        async with aiohttp.ClientSession(timeout=timeout_cfg) as session:
+            async with session.get(url, headers=headers) as resp:
+                async for evt in self._aiter_ndjson(resp):
+                    try:
+                        # Process the event to check for completion/errors
+                        result = _process_stream_event(
+                            evt,
+                            task=task,
+                            stopper=None,  # We'll handle stopping via the iterator
+                        )
+                        if result is not None:
+                            yield result
+                            return
+                        yield _strip_task(evt)
+                    except Exception as exc:
+                        yield exc
+                        raise
+
+    async def _aiter_ndjson(self, resp: Any) -> AsyncIterator[Dict[str, Any]]:
+        """Iterate JSON objects from an NDJSON response asynchronously."""
+        async for raw_line in resp.content:  # type: ignore[attr-defined]
+            try:
+                line = raw_line.decode().strip()
+            except Exception:
+                continue
+            if not line:
+                continue
+
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            # Skip heartbeats
+            if isinstance(parsed, dict) and parsed.get("type") == "heartbeat":
+                continue
+
+            # Unwrap data if present (partial update format)
+            if isinstance(parsed, dict) and "data" in parsed and "fields" in parsed:
+                yield parsed["data"]
+            else:
+                yield parsed
+
+    def agent(self, config: Union[str, "AgentConfig"]) -> "AsyncAgent":
+        """Create an async agent for chat interactions.
+
+        Args:
+            config: Either a template reference string (namespace/name@version) or ad-hoc config
+
+        Returns:
+            An AsyncAgent instance for chat operations
+
+        Example:
+            ```python
+            # Template agent
+            agent = client.agent('okaris/assistant@abc123')
+
+            # Send messages
+            response = await agent.send_message('Hello!')
+            ```
+        """
+        from .agent import AsyncAgent
+
+        return AsyncAgent(self, config)
+
+    async def session(self, app: str, **kwargs: Any) -> "AsyncSessionHandle":
+        """Create an async session context manager for stateful interactions.
+
+        Args:
+            app: App reference (e.g., "namespace/name@version")
+            **kwargs: Additional parameters for the initial call
+
+        Returns:
+            An AsyncSessionHandle context manager
+
+        Example:
+            ```python
+            async with await client.session("browser-app@abc123") as session:
+                await session.call("navigate", {"url": "https://example.com"})
+                await session.call("click", {"selector": "#button"})
+                result = await session.call("screenshot", {})
+            # Session automatically ended
+            ```
+        """
+        from .api import AsyncSessionHandle
+
+        # Create session with initial call
+        result = await self.run({
+            "app": app,
+            "input": kwargs.get("input", {}),
+            "function": kwargs.get("function", "run"),
+            "session": "new",
+        })
+        session_id = result.get("session_id")
+        if not session_id:
+            raise RuntimeError("Failed to create session: no session_id returned")
+        return AsyncSessionHandle(self, app, session_id)
+
+
+# --------------- small async utilities ---------------
+async def _async_sleep(seconds: float) -> None:
+    import asyncio
+
+    await asyncio.sleep(seconds)
+
+
+def _b64_to_bytes(b64: str) -> bytes:
+    import base64
+
+    return base64.b64decode(b64)
+
+
+async def _aio_open_file(path: str, mode: str):
+    import aiofiles  # type: ignore
+
+    return await aiofiles.open(path, mode)
+
+
+def _looks_like_base64(value: str) -> bool:
+    # Reject very short strings to avoid matching normal words like "hi"
+    if len(value) < 16:
+        return False
+    # Quick charset check
+    if not Base64_RE.match(value):
+        return False
+    # Must be divisible by 4
+    if len(value) % 4 != 0:
+        return False
+    # Try decode to be sure
+    try:
+        _ = _b64_to_bytes(value)
+        return True
+    except Exception:
+        return False
+
+
+def _strip_task(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Strip task to essential fields."""
+    result = {
+        "id": task.get("id"),
+        "created_at": task.get("created_at"),
+        "updated_at": task.get("updated_at"),
+        "input": task.get("input"),
+        "output": task.get("output"),
+        "logs": task.get("logs"),
+        "status": task.get("status"),
+    }
+    # Include session_id if present
+    if task.get("session_id"):
+        result["session_id"] = task["session_id"]
+    return result
+
+def _process_stream_event(
+    data: Dict[str, Any], *, task: Dict[str, Any], stopper: Optional[Callable[[], None]] = None
+) -> Optional[Dict[str, Any]]:
+    """Shared handler for SSE task events. Returns final task dict when completed, else None.
+    If stopper is provided, it will be called on terminal events to end streaming.
+    """
+    status = parse_status(data.get("status"))
+
+    if status == TaskStatus.COMPLETED:
+        result = _strip_task(data)
+        if stopper:
+            stopper()
+        return result
+    if status == TaskStatus.FAILED:
+        if stopper:
+            stopper()
+        raise RuntimeError(data.get("error") or "task failed")
+    if status == TaskStatus.CANCELLED:
+        if stopper:
+            stopper()
+        raise RuntimeError("task cancelled")
+    return None
+
+

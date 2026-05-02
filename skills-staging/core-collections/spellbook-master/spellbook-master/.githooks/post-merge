@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Re-run bootstrap after pull/merge to keep global skills current
+./bootstrap.sh

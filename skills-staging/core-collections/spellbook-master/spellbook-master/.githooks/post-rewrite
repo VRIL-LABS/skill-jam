@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Re-run bootstrap after rebase (covers git pull --rebase)
+[ "$1" = "rebase" ] || exit 0
+./bootstrap.sh
