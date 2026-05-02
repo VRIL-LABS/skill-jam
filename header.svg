@@ -1,0 +1,134 @@
+<svg width="1200" height="300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <!-- Cosmic gradient background -->
+    <radialGradient id="cosmicBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1a0033;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2d1b69;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d0021;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Psychedelic gradient 1 -->
+    <linearGradient id="psychGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:0.8" />
+      <stop offset="33%" style="stop-color:#00ffff;stop-opacity:0.8" />
+      <stop offset="66%" style="stop-color:#ffff00;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <!-- Psychedelic gradient 2 -->
+    <linearGradient id="psychGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:0.6" />
+      <stop offset="50%" style="stop-color:#f7931e;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#fdc500;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <!-- Glowing gradient for text -->
+    <linearGradient id="textGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#00ffff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ffff00;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#00ff00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Holographic gradient -->
+    <linearGradient id="holoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Filter for glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Filter for stronger glow -->
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#cosmicBg)"/>
+  
+  <!-- Floating orbs -->
+  <circle cx="150" cy="80" r="40" fill="url(#psychGrad1)" opacity="0.4" filter="url(#glow)">
+    <animate attributeName="cy" values="80;90;80" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1050" cy="220" r="50" fill="url(#psychGrad2)" opacity="0.3" filter="url(#glow)">
+    <animate attributeName="cy" values="220;210;220" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="200" cy="250" r="30" fill="url(#holoGrad)" opacity="0.5" filter="url(#glow)">
+    <animate attributeName="cx" values="200;210;200" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="950" cy="60" r="35" fill="url(#textGlow)" opacity="0.4" filter="url(#glow)">
+    <animate attributeName="r" values="35;40;35" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Abstract shapes -->
+  <path d="M 100,150 Q 150,100 200,150 T 300,150" fill="none" stroke="url(#psychGrad1)" stroke-width="3" opacity="0.4" filter="url(#glow)"/>
+  <path d="M 900,150 Q 950,200 1000,150 T 1100,150" fill="none" stroke="url(#psychGrad2)" stroke-width="3" opacity="0.4" filter="url(#glow)"/>
+  
+  <!-- 3D-style geometric shapes -->
+  <polygon points="80,200 120,180 120,220" fill="url(#psychGrad1)" opacity="0.6" filter="url(#glow)"/>
+  <polygon points="1100,100 1140,80 1140,120" fill="url(#psychGrad2)" opacity="0.6" filter="url(#glow)"/>
+  
+  <!-- Stars/sparkles -->
+  <circle cx="250" cy="50" r="2" fill="#ffffff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="850" cy="280" r="2" fill="#ffffff" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="400" cy="30" r="1.5" fill="#00ffff" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="700" cy="270" r="1.5" fill="#ff00ff" opacity="0.85">
+    <animate attributeName="opacity" values="0.85;0.35;0.85" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Main title "SKILL JAM" -->
+  <text x="600" y="140" font-family="'Arial Black', 'Arial Bold', sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="url(#textGlow)" filter="url(#strongGlow)">
+    SKILL JAM
+  </text>
+  
+  <!-- 3D shadow effect for title -->
+  <text x="603" y="143" font-family="'Arial Black', 'Arial Bold', sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="#000000" opacity="0.3">
+    SKILL JAM
+  </text>
+  
+  <!-- Version -->
+  <text x="600" y="175" font-family="'Arial', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#ffffff" opacity="0.9" letter-spacing="4">
+    v1.0
+  </text>
+  
+  <!-- By VRIL LABS -->
+  <g>
+    <rect x="480" y="195" width="240" height="40" rx="20" fill="url(#holoGrad)" opacity="0.3" filter="url(#glow)"/>
+    <text x="600" y="222" font-family="'Arial', sans-serif" font-size="18" font-weight="600" text-anchor="middle" fill="#ffffff" opacity="0.95" letter-spacing="2">
+      BY VRIL LABS
+    </text>
+  </g>
+  
+  <!-- Additional cosmic elements -->
+  <circle cx="350" cy="100" r="3" fill="#ffff00" opacity="0.6">
+    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="780" cy="200" r="3" fill="#00ff00" opacity="0.6">
+    <animate attributeName="r" values="3;5;3" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gradient rings for depth -->
+  <ellipse cx="600" cy="150" rx="300" ry="120" fill="none" stroke="url(#psychGrad1)" stroke-width="1" opacity="0.15"/>
+  <ellipse cx="600" cy="150" rx="250" ry="100" fill="none" stroke="url(#psychGrad2)" stroke-width="1" opacity="0.15"/>
+</svg>
