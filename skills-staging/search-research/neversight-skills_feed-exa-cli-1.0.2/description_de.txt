@@ -1,0 +1,1 @@
+Verwenden Sie Exa, um mit Code-kontextbezogenen Befehlszeilen nach Informationen und Programmierressourcen zu suchen. Geeignet für Aufgaben, die Echtzeit-Webdaten erfordern, verlässliche Quellen finden oder bestimmte Codebeispiele/Bibliotheksnutzung abfragen (z. B. technische Recherche, Bestätigung der API-Nutzung, Suche nach Beispielcode).

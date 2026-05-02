@@ -1,0 +1,26 @@
+# Spellbook Registry — external skill sources for embeddings and on-demand pull.
+#
+# Skills and agents are discovered from the filesystem (skills/*/SKILL.md,
+# agents/*.md). This file only lists third-party sources.
+#
+# Consumed by: generate-embeddings.py
+
+# External skill sources for domain skills (pulled on demand, not managed by us).
+sources:
+  - repo: phrazzld/spellbook
+    default: true
+    layout: flat
+    skills_path: skills
+  - repo: anthropics/skills
+    layout: flat
+    skills_path: skills
+  - repo: openai/skills
+    layout: flat
+    skills_path: skills/.curated
+  - repo: vercel-labs/agent-skills
+    layout: flat
+    skills_path: skills
+  - repo: Leonxlnx/taste-skill
+    layout: multi-root
+  - repo: garrytan/gstack
+    layout: multi-root

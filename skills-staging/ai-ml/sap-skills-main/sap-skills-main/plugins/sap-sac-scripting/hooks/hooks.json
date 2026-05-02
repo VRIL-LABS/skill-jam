@@ -1,0 +1,29 @@
+{
+  "description": "SAC script validation and best practices hooks for SAP Analytics Cloud scripting",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/dispatch.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/dispatch.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

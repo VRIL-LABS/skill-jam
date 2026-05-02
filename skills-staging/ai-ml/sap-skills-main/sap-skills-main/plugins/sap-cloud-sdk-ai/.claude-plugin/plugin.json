@@ -1,0 +1,26 @@
+{
+  "name": "sap-cloud-sdk-ai",
+  "description": "Integrates SAP Cloud SDK for AI into JavaScript/TypeScript and Java applications. Use when building applications with SAP AI Core, Generative AI Hub, or Orchestration Service. Covers chat completion, embedding, streaming, function calling, content filtering, data masking, document grounding, prompt registry, and LangChain/Spring AI integration. Supports foundation models via SAP BTP.",
+  "version": "2.1.6",
+  "author": {
+    "name": "E.J.",
+    "email": "maintainers@example.com"
+  },
+  "license": "GPL-3.0",
+  "repository": "https://github.com/secondsky/sap-skills",
+  "keywords": [
+    "artificial intelligence",
+    "btp",
+    "cloud",
+    "java",
+    "javascript",
+    "llm",
+    "machine learning",
+    "sap",
+    "sap-cloud-sdk-ai",
+    "sdk",
+    "streaming",
+    "typescript"
+  ],
+  "category": "ai"
+}

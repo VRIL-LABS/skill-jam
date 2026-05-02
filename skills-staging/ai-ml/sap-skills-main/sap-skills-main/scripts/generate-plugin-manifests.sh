@@ -1,0 +1,574 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# generate-plugin-manifests.sh
+# Generates .claude-plugin/plugin.json for each skill by reading YAML frontmatter from SKILL.md
+# Part of the sap-skills marketplace automation system
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+PLUGINS_DIR="$REPO_ROOT/plugins"
+
+# Source shared categorization function
+source "$SCRIPT_DIR/lib/categorize.sh"
+
+# Default values
+DRY_RUN=false
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Read version from marketplace.json or use default
+get_global_version() {
+  local marketplace_json="$REPO_ROOT/.claude-plugin/marketplace.json"
+  if [ -f "$marketplace_json" ]; then
+    jq -r '.metadata.version // .version // "2.1.0"' "$marketplace_json" 2>/dev/null || echo "2.1.0"
+  else
+    echo "2.1.0"
+  fi
+}
+
+# Usage
+usage() {
+  local exit_code="${1:-0}"
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS] [SKILL_NAME]
+
+Generate plugin.json for skills from SKILL.md YAML frontmatter.
+
+OPTIONS:
+  --dry-run         Preview changes without modifying files
+  --help            Show this help message
+
+ARGUMENTS:
+  SKILL_NAME        Process only this skill (optional, processes all if omitted)
+
+EXAMPLES:
+  # Generate for all skills
+  $(basename "$0")
+
+  # Generate for specific skill
+  $(basename "$0") sap-cap-capire
+
+  # Preview without changes
+  $(basename "$0") --dry-run
+EOF
+  exit "$exit_code"
+}
+
+# Parse arguments
+SKILL_FILTER=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --help)
+      usage
+      ;;
+    -*)
+      echo -e "${RED}Error: Unknown option $1${NC}" >&2
+      usage 1
+      ;;
+    *)
+      SKILL_FILTER="$1"
+      shift
+      ;;
+  esac
+done
+
+# categorize_skill() is now sourced from lib/categorize.sh
+
+# Get category-specific keywords
+get_category_keywords() {
+  local category="$1"
+
+  case "$category" in
+    abap)
+      echo "abap,sap,internal tables,cds,rap,oop,abap cloud"
+      ;;
+    btp)
+      echo "btp,cloud foundry,kyma,cloud platform,sap"
+      ;;
+    cap)
+      echo "cap,cds,cloud application programming,node.js,java,odata"
+      ;;
+    ui-development)
+      echo "ui,frontend,fiori,sapui5,components,mvc"
+      ;;
+    hana)
+      echo "hana,database,sql,sqlscript,hdi,cloud"
+      ;;
+    data-analytics)
+      echo "analytics,data,dashboard,visualization,sac"
+      ;;
+    ai)
+      echo "ai,machine learning,ml,artificial intelligence,llm"
+      ;;
+    tooling)
+      echo "tools,development,cli,automation,productivity"
+      ;;
+    *)
+      echo "sap"
+      ;;
+  esac
+}
+
+# Generate keywords from skill name
+generate_name_keywords() {
+  local name="$1"
+  local keywords="$name"
+
+  # Split by hyphen and add individual parts (>2 chars)
+  IFS='-' read -ra parts <<< "$name"
+  for part in "${parts[@]}"; do
+    if [ ${#part} -gt 2 ]; then
+      keywords="$keywords,$part"
+    fi
+  done
+
+  echo "$keywords"
+}
+
+# Extract keywords from description
+extract_description_keywords() {
+  local description="$1"
+  local keywords=""
+
+  # Common SAP/technical terms to extract (case-insensitive)
+  local patterns=(
+    "REST|GraphQL|JWT|API|SQL|OAuth|SAML|HTTP|JSON|XML|YAML"
+    "WebSocket|TypeScript|JavaScript|Python|Java|Node\.js"
+    "scalable|maintainable|production|authentication|authorization"
+    "serverless|edge|streaming|realtime|deployment|migration"
+    "Cloud Foundry|Kyma|ABAP|CAP|Fiori|HANA|BTP|OData|CDS"
+  )
+
+  for pattern in "${patterns[@]}"; do
+    # Extract matches and convert to lowercase
+    matches=$(echo "$description" | grep -ioE "$pattern" | tr '[:upper:]' '[:lower:]' | sort -u || true)
+    if [ -n "$matches" ]; then
+      keywords="$keywords,$(echo "$matches" | tr '\n' ',' | sed 's/,$//')"
+    fi
+  done
+
+  echo "$keywords"
+}
+
+# Deduplicate and clean keywords
+clean_keywords() {
+  local keywords="$1"
+
+  # Convert to array, deduplicate, filter (>2 chars), sort
+  echo "$keywords" | tr ',' '\n' | \
+    awk '{$1=$1};1' | \
+    grep -v '^$' | \
+    awk 'length($0) > 2' | \
+    sort -u | \
+    tr '\n' ',' | \
+    sed 's/,$//'
+}
+
+# Scan for agent files
+scan_agents() {
+  local skill_dir="$1"
+  local agents_dir="$skill_dir/agents"
+
+  if [ ! -d "$agents_dir" ]; then
+    echo "[]"
+    return
+  fi
+
+  local agents=()
+  while IFS= read -r -d '' agent_file; do
+    local relative_path
+    relative_path="./agents/$(basename "$agent_file")"
+    agents+=("$relative_path")
+  done < <(find "$agents_dir" -maxdepth 1 -name "*.md" -print0 2>/dev/null || true)
+
+  if [ ${#agents[@]} -eq 0 ]; then
+    echo "[]"
+  else
+    printf '%s\n' "${agents[@]}" | jq -R . | jq -s .
+  fi
+}
+
+# Scan for command files
+scan_commands() {
+  local skill_dir="$1"
+  local commands_dir="$skill_dir/commands"
+
+  if [ ! -d "$commands_dir" ]; then
+    echo "[]"
+    return
+  fi
+
+  local commands=()
+  while IFS= read -r -d '' command_file; do
+    local relative_path
+    relative_path="./commands/$(basename "$command_file")"
+    commands+=("$relative_path")
+  done < <(find "$commands_dir" -maxdepth 1 -name "*.md" -print0 2>/dev/null || true)
+
+  if [ ${#commands[@]} -eq 0 ]; then
+    echo "[]"
+  else
+    printf '%s\n' "${commands[@]}" | jq -R . | jq -s .
+  fi
+}
+
+# Extract YAML frontmatter from SKILL.md
+extract_yaml_field() {
+  local skill_md="$1"
+  local field="$2"
+
+  # Extract YAML frontmatter between --- markers
+  local yaml_content
+  yaml_content=$(awk '/^---$/{if(++n==2) exit; next} n==1' "$skill_md")
+
+  # Extract field value
+  local value
+  if [ "$field" = "description" ]; then
+    # Multi-line description handling
+    value=$(echo "$yaml_content" | awk '
+      /^description:/ {
+        in_desc=1
+        sub(/^description:[[:space:]]*\|?[[:space:]]*/, "")
+        if (length($0) > 0) desc=$0
+        next
+      }
+      in_desc {
+        if (/^[a-z_]+:/) {
+          in_desc=0
+        } else {
+          gsub(/^[[:space:]]+/, "")
+          if (length($0) > 0) {
+            if (desc) desc=desc " " $0
+            else desc=$0
+          }
+        }
+      }
+      END { print desc }
+    ')
+  else
+    value=$(echo "$yaml_content" | grep "^${field}:" | sed "s/^${field}:[[:space:]]*//" | tr -d '"' || true)
+  fi
+
+  echo "$value"
+}
+
+# Validate path matches schema pattern for commands/agents
+# Pattern: ^(\.\./)+.+|\./.+$ (parent-relative or local paths)
+validate_path_pattern() {
+  local path="$1"
+  local field_name="$2"
+
+  # Match either ../something or ./something
+  if [[ "$path" =~ ^(\.\./)+[^[:space:]]+$ ]] || [[ "$path" =~ ^\./[^[:space:]]+$ ]]; then
+    return 0
+  else
+    echo -e "${YELLOW}  Warning: Invalid path pattern in $field_name: $path (skipping)${NC}" >&2
+    return 1
+  fi
+}
+
+# Extract list field (commands/agents) from SKILL.md YAML frontmatter
+# Supports both string and array forms:
+#   commands: ../shared/foo.md
+#   commands: ["../shared/foo.md", "./commands/bar.md"]
+#   commands:
+#     - ../shared/foo.md
+#     - ./commands/bar.md
+# Returns JSON array of validated paths (empty array if not specified or all invalid)
+extract_yaml_list_field() {
+  local skill_md="$1"
+  local field="$2"  # "commands" or "agents"
+
+  # Extract YAML frontmatter between --- markers
+  local yaml_content
+  yaml_content=$(awk '/^---$/{if(++n==2) exit; next} n==1' "$skill_md")
+
+  # Check if field exists
+  if ! echo "$yaml_content" | grep -q "^${field}:"; then
+    echo "[]"
+    return
+  fi
+
+  local paths=()
+
+  # Check for inline array format: field: ["path1", "path2"]
+  local inline_array
+  inline_array=$(echo "$yaml_content" | grep "^${field}:" | sed "s/^${field}:[[:space:]]*//" | tr -d '"' || true)
+
+  if [[ "$inline_array" =~ ^\[.*\]$ ]]; then
+    # Parse inline JSON-style array
+    # Remove brackets and split by comma
+    inline_array="${inline_array#\[}"
+    inline_array="${inline_array%\]}"
+    while IFS= read -r path; do
+      path=$(echo "$path" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '"' | tr -d "'")
+      if [ -n "$path" ] && validate_path_pattern "$path" "$field"; then
+        paths+=("$path")
+      fi
+    done < <(echo "$inline_array" | tr ',' '\n')
+  else
+    # Check for single string value: field: path
+    local single_value
+    single_value=$(echo "$yaml_content" | grep "^${field}:" | sed "s/^${field}:[[:space:]]*//" | tr -d '"' | tr -d "'" || true)
+
+    if [ -n "$single_value" ] && [[ ! "$single_value" =~ ^\[ ]] && [[ ! "$single_value" =~ ^$ ]]; then
+      # Single string value
+      if validate_path_pattern "$single_value" "$field"; then
+        paths+=("$single_value")
+      fi
+    else
+      # Check for multi-line YAML list format:
+      # field:
+      #   - path1
+      #   - path2
+      local in_list=false
+      while IFS= read -r line; do
+        if [[ "$line" =~ ^${field}: ]]; then
+          in_list=true
+          continue
+        fi
+        if [ "$in_list" = true ]; then
+          # Check for list item
+          if [[ "$line" =~ ^[[:space:]]+-[[:space:]]+(.+)$ ]]; then
+            local path="${BASH_REMATCH[1]}"
+            path=$(echo "$path" | tr -d '"' | tr -d "'")
+            if [ -n "$path" ] && validate_path_pattern "$path" "$field"; then
+              paths+=("$path")
+            fi
+          # Check for end of list (another field starts)
+          elif [[ "$line" =~ ^[[:alnum:]_-]+: ]]; then
+            in_list=false
+          fi
+        fi
+      done <<< "$yaml_content"
+    fi
+  fi
+
+  # Output as JSON array
+  if [ ${#paths[@]} -eq 0 ]; then
+    echo "[]"
+  else
+    printf '%s\n' "${paths[@]}" | jq -R . | jq -s . | jq 'unique'
+  fi
+}
+
+# Generate plugin.json for a skill
+generate_plugin_json() {
+  local plugin_dir="$1"
+  local plugin_name
+  plugin_name=$(basename "$plugin_dir")
+
+  # Check nested structure first: plugins/[name]/skills/[name]/SKILL.md
+  local skill_md="$plugin_dir/skills/$plugin_name/SKILL.md"
+  local skill_dir="$plugin_dir/skills/$plugin_name"
+
+  # Fallback to flat structure if nested not found: plugins/[name]/SKILL.md
+  if [ ! -f "$skill_md" ]; then
+    skill_md="$plugin_dir/SKILL.md"
+    skill_dir="$plugin_dir"
+  fi
+
+  # Check if SKILL.md exists
+  if [ ! -f "$skill_md" ]; then
+    echo -e "${YELLOW}  Warning: SKILL.md not found in $plugin_name, skipping${NC}" >&2
+    return 1
+  fi
+
+  # Write plugin.json to $plugin_dir/.claude-plugin/; relative paths in the manifest
+  # (e.g. ./agents/foo.md) are resolved by the CLI from $plugin_dir (the plugin root)
+  local claude_plugin_dir="$plugin_dir/.claude-plugin"
+  local plugin_json="$claude_plugin_dir/plugin.json"
+
+  # Extract YAML fields
+  local name
+  name=$(extract_yaml_field "$skill_md" "name")
+  local description
+  description=$(extract_yaml_field "$skill_md" "description")
+  local license
+  license=$(extract_yaml_field "$skill_md" "license")
+
+  # Validate required fields
+  if [ -z "$name" ] || [ -z "$description" ]; then
+    echo -e "${RED}  Error: Missing required YAML fields (name or description) in $plugin_name${NC}" >&2
+    return 1
+  fi
+
+  # Auto-detect category
+  local category
+  category=$(categorize_skill "$plugin_name")
+
+  # Generate keywords
+  local name_keywords
+  name_keywords=$(generate_name_keywords "$name")
+  local category_keywords
+  category_keywords=$(get_category_keywords "$category")
+  local description_keywords
+  description_keywords=$(extract_description_keywords "$description")
+  local all_keywords
+  all_keywords=$(clean_keywords "$name_keywords,$category_keywords,$description_keywords")
+
+  # Convert keywords to JSON array (using jq for proper escaping)
+  local keywords_json
+  keywords_json=$(echo -n "$all_keywords" | jq -R -s -c 'split(",") | map(select(. != ""))')
+
+  # First: Read commands/agents from SKILL.md YAML frontmatter
+  # These preserve user-specified parent-relative paths (../)
+  local yaml_agents_json
+  yaml_agents_json=$(extract_yaml_list_field "$skill_md" "agents")
+  local yaml_commands_json
+  yaml_commands_json=$(extract_yaml_list_field "$skill_md" "commands")
+
+  # Second: Scan for agents and commands at plugin root level (fallback)
+  local scanned_agents_json
+  scanned_agents_json=$(scan_agents "$plugin_dir")
+  local scanned_commands_json
+  scanned_commands_json=$(scan_commands "$plugin_dir")
+
+  # Merge YAML-specified paths with scanned paths
+  # YAML paths take precedence; merge and deduplicate for uniqueItems compliance
+  local agents_json
+  local commands_json
+
+  if [ "$yaml_agents_json" != "[]" ]; then
+    # YAML specified paths - merge with scanned
+    agents_json=$(echo "$yaml_agents_json" "$scanned_agents_json" | jq -s 'add | unique')
+  else
+    # No YAML paths - use scanned only
+    agents_json="$scanned_agents_json"
+  fi
+
+  if [ "$yaml_commands_json" != "[]" ]; then
+    # YAML specified paths - merge with scanned
+    commands_json=$(echo "$yaml_commands_json" "$scanned_commands_json" | jq -s 'add | unique')
+  else
+    # No YAML paths - use scanned only
+    commands_json="$scanned_commands_json"
+  fi
+
+  # Set default license if empty
+  if [ -z "$license" ]; then
+    license="GPL-3.0"
+  fi
+
+  # Build plugin.json content using jq for proper escaping
+  local json_content
+  json_content=$(jq -n \
+    --arg name "$name" \
+    --arg description "$description" \
+    --arg version "$GLOBAL_VERSION" \
+    --arg license "$license" \
+    --argjson keywords "$keywords_json" \
+    --arg category "$category" \
+    --argjson agents "$agents_json" \
+    --argjson commands "$commands_json" \
+    '{
+      name: $name,
+      description: $description,
+      version: $version,
+      author: {
+        name: "E.J.",
+        email: "maintainers@example.com"
+      },
+      license: $license,
+      repository: "https://github.com/secondsky/sap-skills",
+      keywords: $keywords,
+      category: $category
+    } + (if $agents != [] then {agents: $agents} else {} end)
+      + (if $commands != [] then {commands: $commands} else {} end)'
+  )
+
+  # Validate JSON
+  if ! echo "$json_content" | jq . > /dev/null 2>&1; then
+    echo -e "${RED}  Error: Generated invalid JSON for $plugin_name${NC}" >&2
+    return 1
+  fi
+
+  # Pretty-print JSON
+  local formatted_json
+  formatted_json=$(echo "$json_content" | jq .)
+
+  if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}  [DRY RUN] Would create: $plugin_json${NC}"
+    echo "$formatted_json" | sed -n '1,10p'
+    echo "  ..."
+  else
+    # Create plugin directory if it doesn't exist
+    mkdir -p "$claude_plugin_dir"
+
+    # Write plugin.json
+    echo "$formatted_json" > "$plugin_json"
+    echo -e "${GREEN}  ✓ Generated: $plugin_json${NC}"
+  fi
+
+  return 0
+}
+
+# Main execution
+main() {
+  GLOBAL_VERSION=$(get_global_version)
+
+  echo "=== SAP Skills Plugin Manifest Generator ==="
+  echo "Global version: $GLOBAL_VERSION"
+  if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}DRY RUN MODE: No files will be modified${NC}"
+  fi
+  echo ""
+
+  # Check if plugins directory exists
+  if [ ! -d "$PLUGINS_DIR" ]; then
+    echo -e "${RED}Error: Plugins directory not found: $PLUGINS_DIR${NC}" >&2
+    exit 1
+  fi
+
+  local count=0
+  local success=0
+  local failed=0
+
+  # Process each plugin directory
+  for plugin_dir in "$PLUGINS_DIR"/*; do
+    if [ ! -d "$plugin_dir" ]; then
+      continue
+    fi
+
+    local plugin_name
+    plugin_name=$(basename "$plugin_dir")
+
+    # Filter by plugin name if specified
+    if [ -n "$SKILL_FILTER" ] && [ "$plugin_name" != "$SKILL_FILTER" ]; then
+      continue
+    fi
+
+    echo "Processing: $plugin_name"
+    count=$((count + 1))
+
+    if generate_plugin_json "$plugin_dir"; then
+      success=$((success + 1))
+    else
+      failed=$((failed + 1))
+    fi
+  done
+
+  echo ""
+  echo "=== Summary ==="
+  echo "Total processed: $count"
+  echo -e "${GREEN}Successful: $success${NC}"
+  if [ $failed -gt 0 ]; then
+    echo -e "${RED}Failed: $failed${NC}"
+  fi
+
+  if [ "$DRY_RUN" = true ]; then
+    echo ""
+    echo -e "${YELLOW}DRY RUN complete. Run without --dry-run to apply changes.${NC}"
+  fi
+}
+
+main

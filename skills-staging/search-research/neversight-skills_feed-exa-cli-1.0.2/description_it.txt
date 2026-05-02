@@ -1,0 +1,1 @@
+Utilizza Exa per cercare informazioni e risorse di programmazione con righe di comando contestuali al codice. Adatto per attività che richiedono dati Web in tempo reale, individuazione di fonti autorevoli o query su esempi di codice/utilizzo della libreria specifici (ad esempio ricerca tecnica, conferma dell'utilizzo dell'API, ricerca di codice di esempio).

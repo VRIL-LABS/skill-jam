@@ -1,0 +1,7 @@
+interface:
+  display_name: "PANews Creator"
+  short_description: "Manage PANews creator sessions, columns, and articles"
+  default_prompt: "Use $panews-creator to validate a creator session, manage columns, or create and update PANews articles."
+
+policy:
+  allow_implicit_invocation: true

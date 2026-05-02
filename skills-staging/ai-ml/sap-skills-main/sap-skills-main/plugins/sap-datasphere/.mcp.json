@@ -1,0 +1,15 @@
+{
+  "sap-datasphere": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@mariodefe/sap-datasphere-mcp"
+    ],
+    "env": {
+      "DATASPHERE_BASE_URL": "${DATASPHERE_BASE_URL}",
+      "DATASPHERE_CLIENT_ID": "${DATASPHERE_CLIENT_ID}",
+      "DATASPHERE_CLIENT_SECRET": "${DATASPHERE_CLIENT_SECRET}",
+      "DATASPHERE_TOKEN_URL": "${DATASPHERE_TOKEN_URL}"
+    }
+  }
+}

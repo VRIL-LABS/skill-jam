@@ -1,0 +1,79 @@
+---
+name: write-ios-macos-changelog
+description: Reads commits and changed files within a timeframe specified by user and compiles a changelog for both iOS and macOS.
+metadata:
+  short-description: Write changelog for iOS/macOS release
+---
+
+If not specified a timeframe, ask the user for a time frame to read commits until then.
+Read all commits until specified point in history, list files for each commit and compile a list of new features and fixes for each app. For changes in shared modules, include it for both apps.
+
+Write in past tense. Use these examples for the tone, tense, and wording. Example:
+
+```
+New
+
+- Added video upload support
+- New chat visibility setting: Open chat settings to change who can access the chat
+
+Fixes & Improvements
+
+- Fixed emojis appearing as invalid character
+- Fixed video upload failing
+```
+
+Example:
+```
+New
+
+- You can now edit gradients directly on the canvas using gradient handles
+- Added text formatting panel to control casing, wrapping, and truncation
+- Added support for automatic optical size in variable fonts
+
+Improvements and fixes
+
+- Reworked the snapping system for better performance and improved heuristics
+- Improved performance of duplicating elements with -drag
+- Fill and Fit sizes now report rounded values
+- Removed unnecessary background-repeat styles from the code output
+- Improved handling of mismatching font versions
+- Editor will no longer attempt to load a font from Google if a local version is available
+- Fixed an issue where an empty Selection colors panel was sometimes shown
+```
+
+# More guidelines
+
+- Prefer 5 to 10 bullets total for most releases.
+
+# Filtering rules
+
+- Include: new features, UI changes, behavior changes, bug fixes users would notice, performance improvements with visible impact.
+- Exclude: refactors, dependency bumps, CI changes, developer tooling, internal logging, analytics changes unless they affect user privacy or behavior.
+- If a change is ambiguous, ask for clarification or describe it as a small improvement only if it is user-visible.
+
+# Language Guidelines
+
+- Write short, benefit-focused bullets for each user-facing change.
+- Use clear verbs and plain language; avoid internal jargon.
+- Translate technical terms into user-facing descriptions.
+- Avoid versions of "API", "refactor", "nil", "crash log", or "dependency".
+- Prefer "Improved", "Added", "Fixed", "Updated" or action verbs like "Search", "Upload", "Sync".
+- Keep tense present or past: "Added", "Improved", "Fixed".
+
+# QA Checklist
+
+- Every bullet ties to a real change in the range.
+- No duplicate bullets that describe the same change.
+- No internal jargon or file paths.
+- Final list fits App Store text limits for the target storefront if provided.
+
+# Inputs
+- Ask for timeframe/range if missing (tag/date/commit).
+
+# Data gathering
+- Use `git log <range> --name-only --pretty=...` and map shared changes to both apps.
+
+# Output rules
+- 5–10 bullets total.
+- Past tense, user-facing language only.
+- No internal jargon, file paths, or duplicate bullets.

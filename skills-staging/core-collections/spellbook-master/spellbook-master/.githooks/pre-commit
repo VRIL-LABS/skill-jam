@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Auto-regenerate committed derived artifacts when SKILL.md files change.
+# index.yaml stays in sync automatically. Embeddings are local cache only.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+skill_changed() {
+  git diff --cached --name-only | grep -q 'skills/.*/SKILL\.md\|agents/.*\.md'
+}
+
+skill_changed || exit 0
+
+# --- index.yaml: always regenerate (cheap, local) ---
+echo "[pre-commit] Skill content changed — regenerating index.yaml"
+bash "$REPO_ROOT/scripts/generate-index.sh" > /dev/null
+git add "$REPO_ROOT/index.yaml"
+
+exit 0
