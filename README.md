@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="header.svg" alt="SKILL JAM v1.0 by VRIL LABS" width="100%"/>
+</div>
+
 # 🎸 skill-jam
 
 > A large collection of agent skills, all "jammed" together in one repository. Welcome to the `skill-jam`.
