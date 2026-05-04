@@ -34,3 +34,15 @@
 [submodule "popular-skills/sickn33/antigravity-awesome-skills"]
 	path = popular-skills/sickn33/antigravity-awesome-skills
 	url = https://github.com/sickn33/antigravity-awesome-skills.git
+[submodule "popular-skills/automazeio/ccpm"]
+	path = popular-skills/automazeio/ccpm
+	url = https://github.com/automazeio/ccpm.git
+[submodule "popular-skills/mukul975/Anthropic-Cybersecurity-Skills"]
+	path = popular-skills/mukul975/Anthropic-Cybersecurity-Skills
+	url = https://github.com/mukul975/Anthropic-Cybersecurity-Skills.git
+[submodule "popular-skills/new-silvermoon/awesome-android-agent-skills"]
+	path = popular-skills/new-silvermoon/awesome-android-agent-skills
+	url = https://github.com/new-silvermoon/awesome-android-agent-skills.git
+[submodule "popular-skills/hoodini/ai-agents-skills"]
+	path = popular-skills/hoodini/ai-agents-skills
+	url = https://github.com/hoodini/ai-agents-skills.git
