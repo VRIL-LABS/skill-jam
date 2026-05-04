@@ -113,12 +113,18 @@ Skills in this repository follow the [Agent Skills](https://agentskills.io/) ope
 npx skills add https://github.com/VRIL-LABS/skill-jam
 ```
 
-### Install a specific general skill
+### Install a specific skill
+
+Any of the 60 skills (50 general + 10 featured visualizers) can be installed by name:
 
 ```bash
-npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
+# General skills
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill code-reviewer
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill bug-diagnoser
+
+# Featured 3D visualizer skills (discovered via .claude-plugin/marketplace.json)
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill tesla-standing-wave-visualizer
 ```
 
 ### Install all 60 skills (general + featured visualizers)
@@ -127,14 +133,6 @@ The `featured-skills/` directory lives one level deeper than Vercel's flat layou
 
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill "*"
-```
-
-### Install a specific featured visualizer
-
-```bash
-npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
-npx skills add https://github.com/VRIL-LABS/skill-jam --skill tesla-standing-wave-visualizer
-npx skills add https://github.com/VRIL-LABS/skill-jam --skill searl-effect-generator-visualizer
 ```
 
 ### Install skills from a popular-skills submodule
