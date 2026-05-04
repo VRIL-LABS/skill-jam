@@ -31,3 +31,6 @@
 [submodule "popular-skills/Agents365-ai/drawio-skill"]
 	path = popular-skills/Agents365-ai/drawio-skill
 	url = https://github.com/Agents365-ai/drawio-skill.git
+[submodule "popular-skills/sickn33/antigravity-awesome-skills"]
+	path = popular-skills/sickn33/antigravity-awesome-skills
+	url = https://github.com/sickn33/antigravity-awesome-skills.git
