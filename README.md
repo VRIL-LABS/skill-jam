@@ -4,9 +4,10 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-v1.1-blueviolet?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.2-blueviolet?style=flat-square)
 ![Skills](https://img.shields.io/badge/skills-50-ff69b4?style=flat-square)
 ![Featured Skills](https://img.shields.io/badge/featured%20skills-10-cyan?style=flat-square&color=00bfff)
+![Popular Skills](https://img.shields.io/badge/popular%20skill%20repos-11-yellow?style=flat-square)
 ![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
@@ -42,7 +43,9 @@ An **agent skill** is a discrete, callable capability that an AI agent can use a
 ```
 skill-jam/
 ├── README.md              ← You are here
-├── header.svg             ← Animated banner (v1.1)
+├── header.svg             ← Animated banner (v1.2)
+├── .claude-plugin/
+│   └── marketplace.json   ← Skills discovery config (enables npx skills add)
 ├── featured-skills/       ← 10 hand-picked 3D visualizer skills
 │   ├── biefeld-brown-electrogravitics-visualizer/
 │   ├── hutchison-effect-visualizer/
@@ -54,6 +57,18 @@ skill-jam/
 │   ├── schauberger-vortex-flow-visualizer/
 │   ├── searl-effect-generator-visualizer/
 │   └── tesla-standing-wave-visualizer/
+├── popular-skills/        ← 11 curated submodules from leading orgs
+│   ├── vercel-labs/agent-skills        (Vercel)
+│   ├── anthropics/skills               (Anthropic)
+│   ├── microsoft/skills                (Microsoft)
+│   ├── addyosmani/agent-skills         (Google / Addy Osmani)
+│   ├── K-Dense-AI/scientific-agent-skills
+│   ├── agentskills/agentskills         (agentskills.io spec)
+│   ├── OthmanAdi/planning-with-files
+│   ├── wormhole-foundation/blockchain-interop
+│   ├── arpitg1304/robotics-agent-skills
+│   ├── machina-sports/sports-skills
+│   └── Agents365-ai/drawio-skill
 ├── skills/
 │   ├── engineering/       ← Software development & DevOps skills
 │   ├── data/              ← Data analysis, ETL, and machine learning skills
@@ -85,6 +100,86 @@ The `featured-skills/` directory showcases **10 hand-picked, production-quality 
 | 10 | **Tesla Standing Wave Visualizer** | Nikola Tesla's Wardenclyffe resonance system — Earth-resonance cavity modes, radial electric field pulses, and toroidal magnifying transmitter fields. |
 
 > Each featured skill lives in `featured-skills/<skill-name>/SKILL.md` and contains full invocation context, process steps, and stack details.
+
+---
+
+## 📦 Installing Skills via `npx skills add`
+
+Skills in this repository follow the [Agent Skills](https://agentskills.io/) open format and are compatible with the `skills` CLI. Install any skill directly into your AI agent (Claude Code, Cursor, Copilot, etc.) with a single command.
+
+### Install all 50 general skills
+
+```bash
+npx skills add https://github.com/VRIL-LABS/skill-jam
+```
+
+### Install a specific general skill
+
+```bash
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill code-reviewer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill bug-diagnoser
+```
+
+### Install all 60 skills (general + featured visualizers)
+
+The `featured-skills/` directory lives one level deeper than Vercel's flat layout, so a `.claude-plugin/marketplace.json` is included at the repository root to make all 10 featured 3D visualizer skills discoverable at the same depth as the general skills. No extra flags are needed:
+
+```bash
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill "*"
+```
+
+### Install a specific featured visualizer
+
+```bash
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill tesla-standing-wave-visualizer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill searl-effect-generator-visualizer
+```
+
+### Install skills from a popular-skills submodule
+
+Each `popular-skills/` entry is a full Git submodule pointing to its upstream repository. Install directly from the upstream source (fastest) or via the submodule path in this repo:
+
+```bash
+# Direct from upstream (recommended)
+npx skills add https://github.com/vercel-labs/agent-skills
+npx skills add https://github.com/anthropics/skills
+npx skills add https://github.com/microsoft/skills
+
+# Via skill-jam submodule path (requires --full-depth)
+npx skills add https://github.com/VRIL-LABS/skill-jam --full-depth --skill react-best-practices
+```
+
+---
+
+## 🌐 Popular Skills
+
+The `popular-skills/` directory contains **11 curated Git submodules** pointing to the most widely used agent skill repositories from leading organizations. These are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
+
+| # | Repository | Organization | Stars | Description |
+|---|-----------|--------------|-------|-------------|
+| 1 | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | Vercel | ⭐ | React best practices, web design guidelines, Vercel deployment, view transitions, and composition patterns. |
+| 2 | [anthropics/skills](https://github.com/anthropics/skills) | Anthropic | ⭐ 128k | Anthropic's official Claude skills — creative, technical, enterprise, and document skills. The reference implementation. |
+| 3 | [microsoft/skills](https://github.com/microsoft/skills) | Microsoft | ⭐ 2.2k | Microsoft SDK skills for coding agents — Azure, Foundry, MCP servers, and custom agent patterns. |
+| 4 | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | Addy Osmani (Google) | ⭐ 28k | Production-grade engineering skills from a Google Chrome engineer — performance, accessibility, and web platform best practices. |
+| 5 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | K-Dense AI | ⭐ 20k | Research, science, engineering, bioinformatics, drug discovery, materials science, and data analysis skills. |
+| 6 | [agentskills/agentskills](https://github.com/agentskills/agentskills) | agentskills.io | ⭐ 18k | The official Agent Skills specification, SDK, and reference examples maintained by Anthropic. |
+| 7 | [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) | OthmanAdi | ⭐ 20k | Manus-style persistent markdown planning skill — document-driven workflow with structured task decomposition. |
+| 8 | [wormhole-foundation/blockchain-interop](https://github.com/wormhole-foundation/blockchain-interop) | Wormhole Foundation | ⭐ | Cross-chain blockchain interoperability skills covering NTT, CCTP, Connect, Messaging, and Settlement. |
+| 9 | [arpitg1304/robotics-agent-skills](https://github.com/arpitg1304/robotics-agent-skills) | arpitg1304 | ⭐ 190 | Production-grade robotics skills for ROS1/ROS2, SOLID principles, design patterns, and testing. |
+| 10 | [machina-sports/sports-skills](https://github.com/machina-sports/sports-skills) | Machina Sports | ⭐ 95 | Live sports data and prediction market skills for Football, F1, Kalshi, and Polymarket — zero API keys required. |
+| 11 | [Agents365-ai/drawio-skill](https://github.com/Agents365-ai/drawio-skill) | Agents365 | ⭐ 1.1k | Generate professional draw.io diagrams from natural language and export to PNG/SVG/PDF. |
+
+### Initializing submodules
+
+```bash
+# After cloning skill-jam, fetch all submodule content
+git submodule update --init --recursive
+
+# Update all submodules to their latest upstream commits
+git submodule update --remote --merge
+```
 
 ---
 

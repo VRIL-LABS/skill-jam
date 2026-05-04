@@ -1,0 +1,20 @@
+{
+  "plugins": [
+    {
+      "name": "featured-visualizer-skills",
+      "source": "./featured-skills",
+      "skills": [
+        "./biefeld-brown-electrogravitics-visualizer",
+        "./hutchison-effect-visualizer",
+        "./leedskalnin-magnetic-current-visualizer",
+        "./repulsine-aerodynamics-visualizer",
+        "./rife-resonance-visualizer",
+        "./russell-cosmogony-visualizer",
+        "./schappeller-magnetism-visualizer",
+        "./schauberger-vortex-flow-visualizer",
+        "./searl-effect-generator-visualizer",
+        "./tesla-standing-wave-visualizer"
+      ]
+    }
+  ]
+}

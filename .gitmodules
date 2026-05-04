@@ -1,0 +1,33 @@
+[submodule "popular-skills/vercel-labs/agent-skills"]
+	path = popular-skills/vercel-labs/agent-skills
+	url = https://github.com/vercel-labs/agent-skills.git
+[submodule "popular-skills/anthropics/skills"]
+	path = popular-skills/anthropics/skills
+	url = https://github.com/anthropics/skills.git
+[submodule "popular-skills/microsoft/skills"]
+	path = popular-skills/microsoft/skills
+	url = https://github.com/microsoft/skills.git
+[submodule "popular-skills/addyosmani/agent-skills"]
+	path = popular-skills/addyosmani/agent-skills
+	url = https://github.com/addyosmani/agent-skills.git
+[submodule "popular-skills/K-Dense-AI/scientific-agent-skills"]
+	path = popular-skills/K-Dense-AI/scientific-agent-skills
+	url = https://github.com/K-Dense-AI/scientific-agent-skills.git
+[submodule "popular-skills/agentskills/agentskills"]
+	path = popular-skills/agentskills/agentskills
+	url = https://github.com/agentskills/agentskills.git
+[submodule "popular-skills/OthmanAdi/planning-with-files"]
+	path = popular-skills/OthmanAdi/planning-with-files
+	url = https://github.com/OthmanAdi/planning-with-files.git
+[submodule "popular-skills/wormhole-foundation/blockchain-interop"]
+	path = popular-skills/wormhole-foundation/blockchain-interop
+	url = https://github.com/wormhole-foundation/blockchain-interop.git
+[submodule "popular-skills/arpitg1304/robotics-agent-skills"]
+	path = popular-skills/arpitg1304/robotics-agent-skills
+	url = https://github.com/arpitg1304/robotics-agent-skills.git
+[submodule "popular-skills/machina-sports/sports-skills"]
+	path = popular-skills/machina-sports/sports-skills
+	url = https://github.com/machina-sports/sports-skills.git
+[submodule "popular-skills/Agents365-ai/drawio-skill"]
+	path = popular-skills/Agents365-ai/drawio-skill
+	url = https://github.com/Agents365-ai/drawio-skill.git
