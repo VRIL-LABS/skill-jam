@@ -122,6 +122,8 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --plugin vril-skills
 
 ### Install all 50 general skills
 
+The base command installs the 50 core general skills (engineering, data, productivity, research, commerce, creative) found at the top level of `skills/`. For the full 100-skill Vril collection use the `--plugin vril-skills` command above.
+
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam
 ```
