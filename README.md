@@ -69,7 +69,7 @@ skill-jam/
 
 ## ⭐ Featured Skills
 
-The `featured-skills/` directory showcases **10 hand-picked, production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems. Each visualizer brings a fringe or alternative-physics concept to life with interactive real-time 3D rendering.
+The `featured-skills/` directory showcases **10 hand-picked, production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems. Each visualizer brings an alternative-physics concept to life with interactive real-time 3D rendering.
 
 | # | Skill | Description |
 |---|-------|-------------|
