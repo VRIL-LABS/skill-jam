@@ -1,5 +1,15 @@
 <div align="center">
-  <img src="header.svg" alt="SKILL JAM v1.0 by VRIL LABS" width="100%"/>
+  <img src="header.svg" alt="SKILL JAM v1.1 by VRIL LABS" width="100%"/>
+</div>
+
+<div align="center">
+
+![Version](https://img.shields.io/badge/version-v1.1-blueviolet?style=flat-square)
+![Skills](https://img.shields.io/badge/skills-50-ff69b4?style=flat-square)
+![Featured Skills](https://img.shields.io/badge/featured%20skills-10-cyan?style=flat-square&color=00bfff)
+![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
+![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
+
 </div>
 
 # 🎸 skill-jam
@@ -32,6 +42,18 @@ An **agent skill** is a discrete, callable capability that an AI agent can use a
 ```
 skill-jam/
 ├── README.md              ← You are here
+├── header.svg             ← Animated banner (v1.1)
+├── featured-skills/       ← 10 hand-picked 3D visualizer skills
+│   ├── biefeld-brown-electrogravitics-visualizer/
+│   ├── hutchison-effect-visualizer/
+│   ├── leedskalnin-magnetic-current-visualizer/
+│   ├── repulsine-aerodynamics-visualizer/
+│   ├── rife-resonance-visualizer/
+│   ├── russell-cosmogony-visualizer/
+│   ├── schappeller-magnetism-visualizer/
+│   ├── schauberger-vortex-flow-visualizer/
+│   ├── searl-effect-generator-visualizer/
+│   └── tesla-standing-wave-visualizer/
 ├── skills/
 │   ├── engineering/       ← Software development & DevOps skills
 │   ├── data/              ← Data analysis, ETL, and machine learning skills
@@ -42,6 +64,27 @@ skill-jam/
 └── docs/
     └── contributing.md    ← How to add your own skills
 ```
+
+---
+
+## ⭐ Featured Skills
+
+The `featured-skills/` directory showcases **10 hand-picked, production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems. Each visualizer brings a fringe or alternative-physics concept to life with interactive real-time 3D rendering.
+
+| # | Skill | Description |
+|---|-------|-------------|
+| 1 | **Biefeld-Brown Electrogravitics Visualizer** | Real-time 3D visualization of asymmetric high-voltage capacitor thrust, ionic wind flow, and electrogravitics lift vectors. |
+| 2 | **Hutchison Effect Visualizer** | Volumetric 3D rendering of overlapping RF, microwave, and Tesla coil interference fields producing anomalous material-behavior zones. |
+| 3 | **Leedskalnin Magnetic Current Visualizer** | Dual counter-streaming helical North/South magnetic particle flows through conductors, based on Ed Leedskalnin's magnetic current theory. |
+| 4 | **Repulsine Aerodynamics Visualizer** | Viktor Schauberger's vortex implosion disc — dual counter-rotating vortex structure, centripetal dynamics, and toroidal pressure fields. |
+| 5 | **Rife Resonance Visualizer** | Plasma tube resonance system with MOR frequency standing waves, spectral emission lines, and cellular resonance targets. |
+| 6 | **Russell Cosmogony Visualizer** | Walter Russell's wave universe — dual opposed vortex cone matter formation, cube-sphere pressure geometry, and nine-octave periodic table wave structure. |
+| 7 | **Schappeller Magnetism Visualizer** | Karl Schappeller's glowing magnetism sphere — etheric plasma core, self-organizing magnetic field lines, and luminous aether vortex. |
+| 8 | **Schauberger Vortex Flow Visualizer** | Viktor Schauberger's "living water" implosion vortex — hyperbolic spiral flow, centripetal suction, and temperature-stratified laminar streams. |
+| 9 | **Searl Effect Generator Visualizer** | John Searl's SEG — concentric magnetic rotor rings, self-accelerating roller cylinders, and an electron-spin plasma boundary layer. |
+| 10 | **Tesla Standing Wave Visualizer** | Nikola Tesla's Wardenclyffe resonance system — Earth-resonance cavity modes, radial electric field pulses, and toroidal magnifying transmitter fields. |
+
+> Each featured skill lives in `featured-skills/<skill-name>/SKILL.md` and contains full invocation context, process steps, and stack details.
 
 ---
 
