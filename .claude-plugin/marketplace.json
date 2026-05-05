@@ -22,6 +22,9 @@
       "version": "1.3.0",
       "source": ".",
       "skills": [
+        "./skills/codebase-recon",
+        "./skills/skill-builder",
+        "./skills/skill-navigator",
         "./skills/accessibility-auditor",
         "./skills/api-scaffolder",
         "./skills/auth-integrator",
