@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="header.svg" alt="SKILL JAM v1.3 by VRIL LABS" width="100%"/>
+  <img src="header.svg" alt="SKILL JAM v1.4 by VRIL LABS" width="100%"/>
 </div>
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-v1.3-blueviolet?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.4-blueviolet?style=flat-square)
 ![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
@@ -46,7 +46,7 @@ An **agent skill** is a discrete, callable capability that an AI agent can use a
 ```
 skill-jam/
 ├── README.md              ← You are here
-├── header.svg             ← Animated banner (v1.3)
+├── header.svg             ← Animated banner (v1.4)
 ├── .claude-plugin/
 │   └── marketplace.json   ← Skills discovery config (enables npx skills add)
 ├── featured-skills/       ← 10 hand-picked 3D visualizer skills
