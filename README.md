@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
-![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-100-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
+![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-103-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-10-00bfff?style=flat-square)</a>
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-16-yellow?style=flat-square)</a>
 ![Total Skills in Submodules](https://img.shields.io/badge/Total%20Skills%20in%20Submodules-2%2C000%2B-9b59b6?style=flat-square)
@@ -83,7 +83,10 @@ skill-jam/
 │   ├── productivity/      ← Scheduling, email, file management skills
 │   ├── research/          ← Web search, summarization, and citation skills
 │   ├── commerce/          ← E-commerce, finance, and business skills
-│   └── creative/          ← Writing, media, and content skills
+│   ├── creative/          ← Writing, media, and content skills
+│   ├── codebase-recon/    ← ☄️ VRIL LABS: Full-spectrum codebase reconnaissance
+│   ├── skill-builder/     ← ☄️ VRIL LABS: SKILL.md authoring best practices
+│   └── skill-navigator/   ← ☄️ VRIL LABS: Skill discovery & invocation guide
 └── docs/
     └── contributing.md    ← How to add your own skills
 ```
@@ -115,9 +118,9 @@ The `featured-skills/` directory showcases **10 hand-picked, production-quality 
 
 Skills in this repository follow the [Agent Skills](https://agentskills.io/) open format and are compatible with the `skills` CLI. Install any skill directly into your AI agent (Claude Code, Cursor, Copilot, etc.) with a single command.
 
-### ✨ Install the Vril Skills collection (100 curated skills)
+### ✨ Install the Vril Skills collection (103 curated skills)
 
-The `vril-skills` collection is the curated flagship bundle — 100 hand-picked, production-ready skills spanning engineering, data, productivity, research, commerce, creative, 3D visualization, Vercel, Cloudflare, browser automation, document processing, blockchain, and more.
+The `vril-skills` collection is the curated flagship bundle — 103 hand-picked, production-ready skills spanning engineering, data, productivity, research, commerce, creative, 3D visualization, Vercel, Cloudflare, browser automation, document processing, blockchain, and three exclusive VRIL LABS meta-skills.
 
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam --plugin vril-skills
@@ -125,7 +128,7 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --plugin vril-skills
 
 ### Install all 50 general skills
 
-The base command installs the 50 core general skills (engineering, data, productivity, research, commerce, creative) found at the top level of `skills/`. For the full 100-skill Vril collection use the `--plugin vril-skills` command above.
+The base command installs the 50 core general skills (engineering, data, productivity, research, commerce, creative) found at the top level of `skills/`. For the full 103-skill Vril collection use the `--plugin vril-skills` command above.
 
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam
@@ -208,7 +211,7 @@ git submodule update --remote --merge
 
 ## 🗂️ All Skills
 
-A complete list of all **100 curated skills** in the Vril Skills collection, spanning engineering, data, productivity, research, commerce, creative, 3D visualization, Vercel, Cloudflare, browser automation, search, document processing, security, and blockchain domains.
+A complete list of all **103 curated skills** in the Vril Skills collection, spanning engineering, data, productivity, research, commerce, creative, 3D visualization, Vercel, Cloudflare, browser automation, search, document processing, security, blockchain domains, and three exclusive VRIL LABS meta-skills.
 
 | # | Skill | Category | Description |
 |---|-------|----------|-------------|
@@ -357,6 +360,14 @@ A complete list of all **100 curated skills** in the Vril Skills collection, spa
 | 98 | **Coinbase Trade** | Executes token swaps and trades via Coinbase's agentic wallet and DEX integrations. |
 | 99 | **On-Chain Data Query** | Queries blockchain state, transaction history, token balances, and contract data across EVM chains. |
 | 100 | **Monetize Service** | Deploys x402 payment-gated API endpoints to charge per-call using Coinbase's stablecoin infrastructure. |
+
+### ☄️ VRIL LABS Exclusive Meta-Skills (101–103)
+
+| # | Skill | Category | Description |
+|---|-------|----------|-------------|
+| 101 | **Codebase Recon** | Engineering | Ultra-dense, full-spectrum codebase reconnaissance — chains 28+ code repository platforms and cross-repo search engines to discover and document reference implementations in a `REFERENCE_REPOS.md` corpus. Exclusively by VRIL LABS. |
+| 102 | **Skill Builder** | Meta | Deep-research-backed guide for authoring flawlessly optimal SKILL.md files — YAML frontmatter, process design, output contracts, and marketplace registration. Exclusively by VRIL LABS. |
+| 103 | **Skill Navigator** | Meta | Skill discovery and invocation strategy guide — teaches agents when to use skills, how to find the right skill in skill-jam, optimal invocation timing, chaining patterns, and token-efficiency rules. Exclusively by VRIL LABS. |
 
 ---
 
