@@ -19,7 +19,7 @@
     {
       "name": "vril-skills",
       "description": "Vril Skills — a curated collection of 100 production-ready agent skills spanning engineering, data, productivity, research, commerce, creative, 3D visualization, Vercel, Cloudflare, browser automation, document processing, blockchain, and more. Compatible with Claude Code, GitHub Copilot, Cursor, Codex CLI, and any Skills CLI-compatible agent.",
-      "version": "1.3.0",
+      "version": "1.41.0",
       "source": ".",
       "skills": [
         "./skills/codebase-recon",
@@ -124,7 +124,11 @@
         "./skills/blockchain-crypto/coinbase-agentic-wallet-skills-send-usdc-1.0.1",
         "./skills/blockchain-crypto/coinbase-agentic-wallet-skills-trade-1.0.1",
         "./skills/blockchain-crypto/coinbase-agentic-wallet-skills-query-onchain-data-1.0.1",
-        "./skills/blockchain-crypto/coinbase-agentic-wallet-skills-monetize-service-1.0.1"
+        "./skills/blockchain-crypto/coinbase-agentic-wallet-skills-monetize-service-1.0.1",
+        "./skills/website-building",
+        "./skills/website-building/nextjs",
+        "./skills/website-building/react-native",
+        "./skills/design-foundations"
       ]
     }
   ]
