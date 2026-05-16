@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="header.svg" alt="SKILL JAM v1.4 by VRIL LABS" width="100%"/>
+  <img src="header.svg" alt="SKILL JAM v1.41 by VRIL LABS" width="100%"/>
 </div>
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-v1.4-blueviolet?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.41-blueviolet?style=flat-square)
 ![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
@@ -46,7 +46,7 @@ An **agent skill** is a discrete, callable capability that an AI agent can use a
 ```
 skill-jam/
 ├── README.md              ← You are here
-├── header.svg             ← Animated banner (v1.4)
+├── header.svg             ← Animated banner (v1.41)
 ├── .claude-plugin/
 │   └── marketplace.json   ← Skills discovery config (enables npx skills add)
 ├── featured-skills/       ← 10 hand-picked 3D visualizer skills
@@ -86,7 +86,15 @@ skill-jam/
 │   ├── creative/          ← Writing, media, and content skills
 │   ├── codebase-recon/    ← ☄️ VRIL LABS: Full-spectrum codebase reconnaissance
 │   ├── skill-builder/     ← ☄️ VRIL LABS: SKILL.md authoring best practices
-│   └── skill-navigator/   ← ☄️ VRIL LABS: Skill discovery & invocation guide
+│   ├── skill-navigator/   ← ☄️ VRIL LABS: Skill discovery & invocation guide
+│   ├── design-foundations/ ← 🎨 VRIL LABS: Artifact-agnostic design principles (color, type, data viz)
+│   └── website-building/  ← 🌐 VRIL LABS: Full web design skill suite (HTML, Next.js 16, React Native)
+│       ├── nextjs/        ← Next.js 16+, Tailwind v4, App Router, shadcn/ui
+│       ├── react-native/  ← React Native 0.81 / Expo SDK 54, NativeWind
+│       ├── webapp/        ← Fullstack template (Express + Vite + React + Tailwind v3 + Drizzle)
+│       ├── informational/ ← Portfolios, editorial, landing pages
+│       ├── game/          ← Browser games, Three.js, WebGL, 2D Canvas
+│       └── shared/        ← Design tokens, typography, motion, layout, CSS, toolkit, standards
 └── docs/
     └── contributing.md    ← How to add your own skills
 ```
@@ -368,6 +376,17 @@ A complete list of all **103 curated skills** in the Vril Skills collection, spa
 | 101 | **Codebase Recon** | Engineering | Ultra-dense, full-spectrum codebase reconnaissance — chains 28+ code repository platforms and cross-repo search engines to discover and document reference implementations in a `REFERENCE_REPOS.md` corpus. Exclusively by VRIL LABS. |
 | 102 | **Skill Builder** | Meta | Deep-research-backed guide for authoring flawlessly optimal SKILL.md files — YAML frontmatter, process design, output contracts, and marketplace registration. Exclusively by VRIL LABS. |
 | 103 | **Skill Navigator** | Meta | Skill discovery and invocation strategy guide — teaches agents when to use skills, how to find the right skill in skill-jam, optimal invocation timing, chaining patterns, and token-efficiency rules. Exclusively by VRIL LABS. |
+
+### 🎨 VRIL LABS Exclusive Web Design Skills (104–107)
+
+Production-grade web design and development skills built exclusively by VRIL LABS. These skills route intelligently based on detected framework (Next.js, React Native, or vanilla HTML), apply the Nexus design system, and provide up-to-date guidance on the latest tooling.
+
+| # | Skill | Category | Description |
+|---|-------|----------|-------------|
+| 104 | **Design Foundations** | Design | Artifact-agnostic design principles — Nexus color palette, typography hierarchy, data visualization rules. Works for CSS, React, PowerPoint, matplotlib, PDF, or any visual output. Exclusively by VRIL LABS. |
+| 105 | **Website Building** | Web Design | The master web-design skill with a framework-detection router. Routes to Next.js, React Native, or vanilla HTML guidance automatically. Covers design tokens, typography, motion, layout, accessibility, and deployment. Exclusively by VRIL LABS. |
+| 106 | **Website Building — Next.js 16+** | Web Design | Next.js 16 (current LTS) with Turbopack, Tailwind CSS v4, App Router, `"use cache"` directive, `proxy.ts`, shadcn/ui, `next/image`, `next/font`, and Vercel deployment. Exclusively by VRIL LABS. |
+| 107 | **Website Building — React Native** | Mobile Design | React Native 0.81 / Expo SDK 54 styling — NativeWind v4 (Tailwind for RN), Expo Router v4 file-based navigation, platform-specific shadows, SafeAreaView, and `lucide-react-native`. Exclusively by VRIL LABS. |
 
 ---
 
