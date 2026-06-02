@@ -46,3 +46,6 @@
 [submodule "popular-skills/hoodini/ai-agents-skills"]
 	path = popular-skills/hoodini/ai-agents-skills
 	url = https://github.com/hoodini/ai-agents-skills.git
+[submodule "popular-skills/youdotcom-oss/agent-skills"]
+	path = popular-skills/youdotcom-oss/agent-skills
+	url = https://github.com/youdotcom-oss/agent-skills
