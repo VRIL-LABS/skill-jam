@@ -10,7 +10,7 @@
 
 ![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-103-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-10-00bfff?style=flat-square)</a>
-<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-16-yellow?style=flat-square)</a>
+<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-17-yellow?style=flat-square)</a>
 ![Total Skills in Submodules](https://img.shields.io/badge/Total%20Skills%20in%20Submodules-2%2C000%2B-9b59b6?style=flat-square)
 ![Total Skills Jammed](https://img.shields.io/badge/Total%20Skills%20Jammed-2%2C100%2B-e74c3c?style=flat-square&logoColor=white)
 
@@ -60,7 +60,7 @@ skill-jam/
 │   ├── schauberger-vortex-flow-visualizer/
 │   ├── searl-effect-generator-visualizer/
 │   └── tesla-standing-wave-visualizer/
-├── popular-skills/        ← 16 curated submodules from leading orgs
+├── popular-skills/        ← 17 curated submodules from leading orgs
 │   ├── vercel-labs/agent-skills        (Vercel)
 │   ├── anthropics/skills               (Anthropic)
 │   ├── microsoft/skills                (Microsoft)
@@ -76,7 +76,8 @@ skill-jam/
 │   ├── automazeio/ccpm             (AI project management)
 │   ├── mukul975/Anthropic-Cybersecurity-Skills  (754 cybersecurity skills)
 │   ├── new-silvermoon/awesome-android-agent-skills  (Android dev)
-│   └── hoodini/ai-agents-skills    (AI agent collection)
+│   ├── hoodini/ai-agents-skills    (AI agent collection)
+│   └── youdotcom-oss/agent-skills  (You.com agentic AI integrations)
 ├── skills/
 │   ├── engineering/       ← Software development & DevOps skills
 │   ├── data/              ← Data analysis, ETL, and machine learning skills
@@ -184,7 +185,7 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --full-depth --skill react
 
 ## 🌐 Popular Skills
 
-The `popular-skills/` directory contains **16 curated Git submodules** pointing to the most widely used agent skill repositories from leading organizations. These are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
+The `popular-skills/` directory contains **17 curated Git submodules** pointing to the most widely used agent skill repositories from leading organizations. These are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
 
 | # | Repository | Organization | Stars | Description |
 |---|-----------|--------------|-------|-------------|
@@ -204,6 +205,7 @@ The `popular-skills/` directory contains **16 curated Git submodules** pointing 
 | 14 | [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) | mukul975 | ⭐ 5.9k | 754 structured cybersecurity skills mapped to MITRE ATT&CK, NIST CSF 2.0, ATLAS, D3FEND — 26 security domains. |
 | 15 | [new-silvermoon/awesome-android-agent-skills](https://github.com/new-silvermoon/awesome-android-agent-skills) | new-silvermoon | ⭐ 784 | Standardized agent skills for modern Android development — Kotlin, Jetpack Compose, and best practices. |
 | 16 | [hoodini/ai-agents-skills](https://github.com/hoodini/ai-agents-skills) | Yuval Avidani | ⭐ 201 | Curated collection of specialized skills for Claude Code, GitHub Copilot, Cursor, and Windsurf. |
+| 17 | [youdotcom-oss/agent-skills](https://github.com/youdotcom-oss/agent-skills) | You.com | ⭐ | Integrates You.com capabilities into agentic workflows — Claude, OpenAI, Vercel AI SDK, and Teams.ai. TypeScript/Python. |
 
 ### Initializing submodules
 
