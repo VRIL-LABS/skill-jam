@@ -49,3 +49,24 @@
 [submodule "popular-skills/youdotcom-oss/agent-skills"]
 	path = popular-skills/youdotcom-oss/agent-skills
 	url = https://github.com/youdotcom-oss/agent-skills
+[submodule "popular-skills/shadcn-ui/ui"]
+	path = popular-skills/shadcn-ui/ui
+	url = https://github.com/shadcn-ui/ui.git
+[submodule "popular-skills/addyosmani/web-quality-skills"]
+	path = popular-skills/addyosmani/web-quality-skills
+	url = https://github.com/addyosmani/web-quality-skills.git
+[submodule "popular-skills/rampstackco/claude-skills"]
+	path = popular-skills/rampstackco/claude-skills
+	url = https://github.com/rampstackco/claude-skills.git
+[submodule "popular-skills/greensock/gsap-skills"]
+	path = popular-skills/greensock/gsap-skills
+	url = https://github.com/greensock/gsap-skills.git
+[submodule "popular-skills/freshtechbro/claudedesignskills"]
+	path = popular-skills/freshtechbro/claudedesignskills
+	url = https://github.com/freshtechbro/claudedesignskills.git
+[submodule "popular-skills/tsogjavklann/awwwards-3d"]
+	path = popular-skills/tsogjavklann/awwwards-3d
+	url = https://github.com/tsogjavklann/awwwards-3d.git
+[submodule "popular-skills/nextlevelbuilder/ui-ux-pro-max-skill"]
+	path = popular-skills/nextlevelbuilder/ui-ux-pro-max-skill
+	url = https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git
