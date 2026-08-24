@@ -1,0 +1,53 @@
+# .github/workflows/publish.yml
+# Token-based npm publish where npm reads the literal $NPM_REGISTRY_TOKEN env var.
+#
+# How it works: npm expands ${VAR} references in .npmrc from the environment at
+# runtime, so .npmrc holds the placeholder and the secret never touches disk.
+#
+# Token setup: npmjs.com -> Access Tokens -> Generate New Token (Granular)
+#   - Packages & scopes: read-write on your package
+#   - Enable "Bypass 2FA" (required for non-interactive CI publishes)
+#   - Write tokens are capped at 90-day expiration (rotation required)
+# Then: GitHub repo -> Settings -> Secrets and variables -> Actions -> NPM_REGISTRY_TOKEN
+
+name: Publish Package to npmjs
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # Required for --provenance attestation
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      # NOTE: no registry-url here — setup-node would write its own
+      # NODE_AUTH_TOKEN-based .npmrc and clobber ours.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false # never use caching in release builds
+
+      # Single quotes are load-bearing: the shell must NOT expand the
+      # placeholder — npm expands ${NPM_REGISTRY_TOKEN} itself at publish time.
+      # (Alternative: delete this step and commit this .npmrc to the repo root.)
+      - name: Configure npm registry auth
+        run: |
+          cat > .npmrc <<'EOF'
+          //registry.npmjs.org/:_authToken=${NPM_REGISTRY_TOKEN}
+          EOF
+
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+
+      # --access public is required for scoped packages (@org/pkg);
+      # drop it if your package is unscoped.
+      - run: npm publish --provenance --access public
