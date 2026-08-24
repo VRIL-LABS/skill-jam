@@ -13,6 +13,7 @@
         "./schappeller-magnetism-visualizer",
         "./schauberger-vortex-flow-visualizer",
         "./searl-effect-generator-visualizer",
+        "./paper-shaders",
         "./tesla-standing-wave-visualizer"
       ]
     },
@@ -84,6 +85,7 @@
         "./featured-skills/schappeller-magnetism-visualizer",
         "./featured-skills/schauberger-vortex-flow-visualizer",
         "./featured-skills/searl-effect-generator-visualizer",
+        "./featured-skills/paper-shaders",
         "./featured-skills/tesla-standing-wave-visualizer",
         "./skills/vercel-services/vercel-ai-sdk.md",
         "./skills/vercel-services/vercel-ai-gateway.md",

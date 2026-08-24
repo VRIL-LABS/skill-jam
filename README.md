@@ -9,7 +9,7 @@
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
 ![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-103-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
-<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-10-00bfff?style=flat-square)</a>
+<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-11-00bfff?style=flat-square)</a>
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-24-yellow?style=flat-square)</a>
 ![Total Skills in Submodules](https://img.shields.io/badge/Total%20Skills%20in%20Submodules-2%2C000%2B-9b59b6?style=flat-square)
 ![Total Skills Jammed](https://img.shields.io/badge/Total%20Skills%20Jammed-2%2C100%2B-e74c3c?style=flat-square&logoColor=white)
@@ -49,10 +49,11 @@ skill-jam/
 ├── header.svg             ← Animated banner (v1.41)
 ├── .claude-plugin/
 │   └── marketplace.json   ← Skills discovery config (enables npx skills add)
-├── featured-skills/       ← 10 hand-picked 3D visualizer skills
+├── featured-skills/       ← 11 hand-picked 3D visualizer skills
 │   ├── biefeld-brown-electrogravitics-visualizer/
 │   ├── hutchison-effect-visualizer/
 │   ├── leedskalnin-magnetic-current-visualizer/
+│   ├── paper-shaders/                  (official paper-design/shaders guidance)
 │   ├── repulsine-aerodynamics-visualizer/
 │   ├── rife-resonance-visualizer/
 │   ├── russell-cosmogony-visualizer/
@@ -60,8 +61,7 @@ skill-jam/
 │   ├── schauberger-vortex-flow-visualizer/
 │   ├── searl-effect-generator-visualizer/
 │   └── tesla-standing-wave-visualizer/
-├── popular-skills/        ← 24 tracked Git submodules; custom local Paper Shaders skill also included
-│   ├── paper-design/shaders            (custom local Paper Shaders guidance; official docs)
+├── popular-skills/        ← 24 tracked Git submodules for major ecosystem repos
 │   ├── vercel-labs/agent-skills        (Vercel)
 │   ├── anthropics/skills               (Anthropic)
 │   ├── microsoft/skills                (Microsoft)
@@ -112,20 +112,21 @@ skill-jam/
 
 ## ⭐ Featured Skills
 
-The `featured-skills/` directory showcases **10 hand-picked, production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems. Each visualizer brings an alternative-physics concept to life with interactive real-time 3D rendering.
+The `featured-skills/` directory showcases **11 hand-picked, production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems. Each visualizer brings an alternative-physics concept to life with interactive real-time 3D rendering.
 
 | # | Skill | Description |
 |---|-------|-------------|
 | 1 | **Biefeld-Brown Electrogravitics Visualizer** | Real-time 3D visualization of asymmetric high-voltage capacitor thrust, ionic wind flow, and electrogravitics lift vectors. |
 | 2 | **Hutchison Effect Visualizer** | Volumetric 3D rendering of overlapping RF, microwave, and Tesla coil interference fields producing anomalous material-behavior zones. |
 | 3 | **Leedskalnin Magnetic Current Visualizer** | Dual counter-streaming helical North/South magnetic particle flows through conductors, based on Ed Leedskalnin's magnetic current theory. |
-| 4 | **Repulsine Aerodynamics Visualizer** | Viktor Schauberger's vortex implosion disc — dual counter-rotating vortex structure, centripetal dynamics, and toroidal pressure fields. |
-| 5 | **Rife Resonance Visualizer** | Plasma tube resonance system with MOR frequency standing waves, spectral emission lines, and cellular resonance targets. |
-| 6 | **Russell Cosmogony Visualizer** | Walter Russell's wave universe — dual opposed vortex cone matter formation, cube-sphere pressure geometry, and nine-octave periodic table wave structure. |
-| 7 | **Schappeller Magnetism Visualizer** | Karl Schappeller's glowing magnetism sphere — etheric plasma core, self-organizing magnetic field lines, and luminous aether vortex. |
-| 8 | **Schauberger Vortex Flow Visualizer** | Viktor Schauberger's "living water" implosion vortex — hyperbolic spiral flow, centripetal suction, and temperature-stratified laminar streams. |
-| 9 | **Searl Effect Generator Visualizer** | John Searl's SEG — concentric magnetic rotor rings, self-accelerating roller cylinders, and an electron-spin plasma boundary layer. |
-| 10 | **Tesla Standing Wave Visualizer** | Nikola Tesla's Wardenclyffe resonance system — Earth-resonance cavity modes, radial electric field pulses, and toroidal magnifying transmitter fields. |
+| 4 | **Paper Shaders** | Minimal guidance for paper-inspired shader textures, grain, and soft translucent layers grounded in the official `paper-design/shaders` docs. |
+| 5 | **Repulsine Aerodynamics Visualizer** | Viktor Schauberger's vortex implosion disc — dual counter-rotating vortex structure, centripetal dynamics, and toroidal pressure fields. |
+| 6 | **Rife Resonance Visualizer** | Plasma tube resonance system with MOR frequency standing waves, spectral emission lines, and cellular resonance targets. |
+| 7 | **Russell Cosmogony Visualizer** | Walter Russell's wave universe — dual opposed vortex cone matter formation, cube-sphere pressure geometry, and nine-octave periodic table wave structure. |
+| 8 | **Schappeller Magnetism Visualizer** | Karl Schappeller's glowing magnetism sphere — etheric plasma core, self-organizing magnetic field lines, and luminous aether vortex. |
+| 9 | **Schauberger Vortex Flow Visualizer** | Viktor Schauberger's "living water" implosion vortex — hyperbolic spiral flow, centripetal suction, and temperature-stratified laminar streams. |
+| 10 | **Searl Effect Generator Visualizer** | John Searl's SEG — concentric magnetic rotor rings, self-accelerating roller cylinders, and an electron-spin plasma boundary layer. |
+| 11 | **Tesla Standing Wave Visualizer** | Nikola Tesla's Wardenclyffe resonance system — Earth-resonance cavity modes, radial electric field pulses, and toroidal magnifying transmitter fields. |
 
 > Each featured skill lives in `featured-skills/<skill-name>/SKILL.md` and contains full invocation context, process steps, and stack details.
 
@@ -153,7 +154,7 @@ npx skills add https://github.com/VRIL-LABS/skill-jam
 
 ### Install a specific skill
 
-Any of the 100 skills in the Vril Skills collection can be installed by name:
+Any of the 103 skills in the Vril Skills collection can be installed by name:
 
 ```bash
 # General skills
@@ -162,12 +163,13 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --skill bug-diagnoser
 
 # Featured 3D visualizer skills (discovered via .claude-plugin/marketplace.json)
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill rife-resonance-visualizer
+npx skills add https://github.com/VRIL-LABS/skill-jam --skill paper-shaders
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill tesla-standing-wave-visualizer
 ```
 
-### Install all 60 skills (general + featured visualizers)
+### Install all 61 skills (general + featured visualizers)
 
-The `featured-skills/` directory lives one level deeper than Vercel's flat layout, so a `.claude-plugin/marketplace.json` is included at the repository root to make all 10 featured 3D visualizer skills discoverable at the same depth as the general skills. No extra flags are needed:
+The `featured-skills/` directory lives one level deeper than Vercel's flat layout, so a `.claude-plugin/marketplace.json` is included at the repository root to make all 11 featured 3D visualizer skills discoverable at the same depth as the general skills. No extra flags are needed:
 
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill "*"
@@ -193,7 +195,7 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --full-depth --skill react
 
 ## 🌐 Popular Skills
 
-The `popular-skills/` directory contains **24 tracked Git submodules** pointing to the most widely used agent skill repositories from leading organizations. In addition, a custom local `paper-design/shaders` skill is included because the official repository has no maintained agent skill package. Some entries, such as `shadcn-ui/ui`, are canonical framework reference repos used to ground agent guidance rather than standalone skill bundles. These entries are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
+The `popular-skills/` directory contains **24 tracked Git submodules** pointing to the most widely used agent skill repositories from leading organizations. Some entries, such as `shadcn-ui/ui`, are canonical framework reference repos used to ground agent guidance rather than standalone skill bundles. These entries are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
 
 | # | Repository | Organization | Stars | Description |
 |---|-----------|--------------|-------|-------------|
