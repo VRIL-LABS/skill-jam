@@ -32,7 +32,7 @@ Before searching for skills, understand the skill-jam layout:
 ```
 skill-jam/
 ├── skills/                ← 50 core general skills (flat kebab-case dirs)
-├── featured-skills/       ← 11 VRIL LABS 3D visualizer skills
+├── featured-skills/       ← 12 VRIL LABS featured skills
 ├── skills/vercel-services/  ← Vercel platform skill files
 ├── skills/cloudflare-services/ ← Cloudflare edge skill files
 ├── skills/browser-automation/  ← Browser automation skills
