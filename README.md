@@ -1,15 +1,15 @@
 <div align="center">
-  <img src="header.svg" alt="SKILL JAM v1.41 by VRIL LABS" width="100%"/>
+  <img src="header.svg" alt="SKILL JAM v1.42 by VRIL LABS" width="100%"/>
 </div>
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-v1.41-blueviolet?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.42-blueviolet?style=flat-square)
 ![License](https://img.shields.io/badge/license-open%20source-green?style=flat-square)
 ![Stack](https://img.shields.io/badge/stack-Three.js%20%7C%20React%20Three%20Fiber%20%7C%20TSL-orange?style=flat-square)
 
 ![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-103-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
-<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-12-00bfff?style=flat-square)</a>
+<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-11-00bfff?style=flat-square)</a>
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-24-yellow?style=flat-square)</a>
 ![Total Skills in Submodules](https://img.shields.io/badge/Total%20Skills%20in%20Submodules-2%2C000%2B-9b59b6?style=flat-square)
 ![Total Skills Jammed](https://img.shields.io/badge/Total%20Skills%20Jammed-2%2C100%2B-e74c3c?style=flat-square&logoColor=white)
@@ -46,10 +46,10 @@ An **agent skill** is a discrete, callable capability that an AI agent can use a
 ```
 skill-jam/
 ├── README.md              ← You are here
-├── header.svg             ← Animated banner (v1.41)
+├── header.svg             ← Animated banner (v1.42)
 ├── .claude-plugin/
 │   └── marketplace.json   ← Skills discovery config (enables npx skills add)
-├── featured-skills/       ← 12 hand-picked skills for visual design and interactive systems
+├── featured-skills/       ← 11 hand-picked skills for visual design and interactive systems
 │   ├── biefeld-brown-electrogravitics-visualizer/
 │   ├── hutchison-effect-visualizer/
 │   ├── leedskalnin-magnetic-current-visualizer/
@@ -112,7 +112,7 @@ skill-jam/
 
 ## ⭐ Featured Skills
 
-The `featured-skills/` directory showcases **12 hand-picked skills** for visual design and interactive systems, including **10 production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems, plus the Paper Shaders guidance skill for paper-inspired shader and texture design. The 10 visualizer skills each bring an alternative-physics concept to life with interactive real-time 3D rendering.
+The `featured-skills/` directory showcases **11 hand-picked skills** for visual design and interactive systems, including **10 production-quality 3D visualizer skills** built on [Three.js r182+](https://threejs.org/), [React Three Fiber v9](https://docs.pmnd.rs/react-three-fiber), TSL/GLSL shaders, and GPU particle systems, plus the Paper Shaders guidance skill for paper-inspired shader and texture design. The 10 visualizer skills each bring an alternative-physics concept to life with interactive real-time 3D rendering.
 
 | # | Skill | Description |
 |---|-------|-------------|
@@ -167,9 +167,9 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --skill paper-shaders
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill tesla-standing-wave-visualizer
 ```
 
-### Install all 62 skills (general + featured visualizers)
+### Install all 61 skills (general + featured visualizers)
 
-The `featured-skills/` directory lives one level deeper than Vercel's flat layout, so a `.claude-plugin/marketplace.json` is included at the repository root to make all 12 featured skills discoverable at the same depth as the general skills. No extra flags are needed:
+The `featured-skills/` directory lives one level deeper than Vercel's flat layout, so a `.claude-plugin/marketplace.json` is included at the repository root to make all 11 featured skills discoverable at the same depth as the general skills. No extra flags are needed:
 
 ```bash
 npx skills add https://github.com/VRIL-LABS/skill-jam --skill "*"
@@ -411,12 +411,13 @@ Production-grade web design and development skills built exclusively by VRIL LAB
 
 ## 🤝 Contributing
 
-Have a skill you'd like to add? We'd love to include it! Please see [`docs/contributing.md`](docs/contributing.md) for guidelines on how to structure and submit a new skill.
+We welcome bug reports, documentation improvements, and new skill submissions. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening an issue or pull request so the workflow stays consistent with GitHub contributor guidelines.
 
-A few ground rules:
-- Each skill should have a **clear, single responsibility**
-- Include a description, example inputs/outputs, and any dependencies
-- Skills should be broadly useful, not narrowly specific to one use-case
+For skill authoring and repository conventions, see [`docs/contributing.md`](docs/contributing.md). We expect contributions to be:
+- Focused and easy to review
+- Backed by clear context or examples when behavior changes
+- Respectful, constructive, and aligned with the project goals
+- Designed around a single, reusable responsibility for each skill
 
 ---
 
