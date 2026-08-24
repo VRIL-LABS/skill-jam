@@ -10,7 +10,7 @@
 
 ![VRIL LABS Original Skills](https://img.shields.io/badge/VRIL%20LABS%20Original%20Skills-103-ff69b4?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE1aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==)
 <a href="https://github.com/VRIL-LABS/skill-jam/tree/main/featured-skills" title="Featured 3D AI Agent Skills by VRIL LABS">![Featured 3D Skills](https://img.shields.io/badge/Featured%203D%20Skills-10-00bfff?style=flat-square)</a>
-<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-17-yellow?style=flat-square)</a>
+<a href="https://github.com/VRIL-LABS/skill-jam/tree/main/popular-skills" title="Popular AI Agent Skills as Submodules">![Total Submodules](https://img.shields.io/badge/Total%20Submodules-24-yellow?style=flat-square)</a>
 ![Total Skills in Submodules](https://img.shields.io/badge/Total%20Skills%20in%20Submodules-2%2C000%2B-9b59b6?style=flat-square)
 ![Total Skills Jammed](https://img.shields.io/badge/Total%20Skills%20Jammed-2%2C100%2B-e74c3c?style=flat-square&logoColor=white)
 
@@ -60,11 +60,13 @@ skill-jam/
 │   ├── schauberger-vortex-flow-visualizer/
 │   ├── searl-effect-generator-visualizer/
 │   └── tesla-standing-wave-visualizer/
-├── popular-skills/        ← 17 curated submodules from leading orgs
+├── popular-skills/        ← 24 tracked Git submodules; custom local Paper Shaders skill also included
+│   ├── paper-design/shaders            (custom local Paper Shaders guidance; official docs)
 │   ├── vercel-labs/agent-skills        (Vercel)
 │   ├── anthropics/skills               (Anthropic)
 │   ├── microsoft/skills                (Microsoft)
 │   ├── addyosmani/agent-skills         (Google / Addy Osmani)
+│   ├── addyosmani/web-quality-skills    (WCAG 2.2 AA+ quality guidance)
 │   ├── K-Dense-AI/scientific-agent-skills
 │   ├── agentskills/agentskills         (agentskills.io spec)
 │   ├── OthmanAdi/planning-with-files
@@ -77,7 +79,13 @@ skill-jam/
 │   ├── mukul975/Anthropic-Cybersecurity-Skills  (754 cybersecurity skills)
 │   ├── new-silvermoon/awesome-android-agent-skills  (Android dev)
 │   ├── hoodini/ai-agents-skills    (AI agent collection)
-│   └── youdotcom-oss/agent-skills  (You.com agentic AI integrations)
+│   ├── youdotcom-oss/agent-skills  (You.com agentic AI integrations)
+│   ├── shadcn-ui/ui                (official shadcn/ui + Radix reference library)
+│   ├── rampstackco/claude-skills   (a11y audit workflow)
+│   ├── greensock/gsap-skills       (official GSAP skill)
+│   ├── freshtechbro/claudedesignskills  (Motion / Framer Motion / R3F)
+│   ├── tsogjavklann/awwwards-3d   (Lenis + GSAP + Three.js)
+│   └── nextlevelbuilder/ui-ux-pro-max-skill  (UI/UX Pro Max)
 ├── skills/
 │   ├── engineering/       ← Software development & DevOps skills
 │   ├── data/              ← Data analysis, ETL, and machine learning skills
@@ -185,7 +193,7 @@ npx skills add https://github.com/VRIL-LABS/skill-jam --full-depth --skill react
 
 ## 🌐 Popular Skills
 
-The `popular-skills/` directory contains **17 curated Git submodules** pointing to the most widely used agent skill repositories from leading organizations. These are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
+The `popular-skills/` directory contains **24 tracked Git submodules** pointing to the most widely used agent skill repositories from leading organizations. In addition, a custom local `paper-design/shaders` skill is included because the official repository has no maintained agent skill package. Some entries, such as `shadcn-ui/ui`, are canonical framework reference repos used to ground agent guidance rather than standalone skill bundles. These entries are tracked at a fixed commit for reproducibility and can be updated with `git submodule update --remote`.
 
 | # | Repository | Organization | Stars | Description |
 |---|-----------|--------------|-------|-------------|
@@ -193,19 +201,26 @@ The `popular-skills/` directory contains **17 curated Git submodules** pointing 
 | 2 | [anthropics/skills](https://github.com/anthropics/skills) | Anthropic | ⭐ 128k | Anthropic's official Claude skills — creative, technical, enterprise, and document skills. The reference implementation. |
 | 3 | [microsoft/skills](https://github.com/microsoft/skills) | Microsoft | ⭐ 2.2k | Microsoft SDK skills for coding agents — Azure, Foundry, MCP servers, and custom agent patterns. |
 | 4 | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | Addy Osmani (Google) | ⭐ 28k | Production-grade engineering skills from a Google Chrome engineer — performance, accessibility, and web platform best practices. |
-| 5 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | K-Dense AI | ⭐ 20k | Research, science, engineering, bioinformatics, drug discovery, materials science, and data analysis skills. |
-| 6 | [agentskills/agentskills](https://github.com/agentskills/agentskills) | agentskills.io | ⭐ 18k | The official Agent Skills specification, SDK, and reference examples maintained by Anthropic. |
-| 7 | [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) | OthmanAdi | ⭐ 20k | Manus-style persistent markdown planning skill — document-driven workflow with structured task decomposition. |
-| 8 | [wormhole-foundation/blockchain-interop](https://github.com/wormhole-foundation/blockchain-interop) | Wormhole Foundation | ⭐ | Cross-chain blockchain interoperability skills covering NTT, CCTP, Connect, Messaging, and Settlement. |
-| 9 | [arpitg1304/robotics-agent-skills](https://github.com/arpitg1304/robotics-agent-skills) | arpitg1304 | ⭐ 190 | Production-grade robotics skills for ROS1/ROS2, SOLID principles, design patterns, and testing. |
-| 10 | [machina-sports/sports-skills](https://github.com/machina-sports/sports-skills) | Machina Sports | ⭐ 95 | Live sports data and prediction market skills for Football, F1, Kalshi, and Polymarket — zero API keys required. |
-| 11 | [Agents365-ai/drawio-skill](https://github.com/Agents365-ai/drawio-skill) | Agents365 | ⭐ 1.1k | Generate professional draw.io diagrams from natural language and export to PNG/SVG/PDF. |
-| 12 | [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills) | sickn33 | ⭐ 36k | Installable library of 1,400+ agentic skills with CLI installer, bundles, and official/community collections. Compatible with Claude Code, Cursor, Codex, Gemini CLI, and more. |
-| 13 | [automazeio/ccpm](https://github.com/automazeio/ccpm) | Automazeio | ⭐ 8k | AI-powered project management skills using GitHub Issues and Git worktrees for parallel agent execution. |
-| 14 | [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) | mukul975 | ⭐ 5.9k | 754 structured cybersecurity skills mapped to MITRE ATT&CK, NIST CSF 2.0, ATLAS, D3FEND — 26 security domains. |
-| 15 | [new-silvermoon/awesome-android-agent-skills](https://github.com/new-silvermoon/awesome-android-agent-skills) | new-silvermoon | ⭐ 784 | Standardized agent skills for modern Android development — Kotlin, Jetpack Compose, and best practices. |
-| 16 | [hoodini/ai-agents-skills](https://github.com/hoodini/ai-agents-skills) | Yuval Avidani | ⭐ 201 | Curated collection of specialized skills for Claude Code, GitHub Copilot, Cursor, and Windsurf. |
-| 17 | [youdotcom-oss/agent-skills](https://github.com/youdotcom-oss/agent-skills) | You.com | ⭐ | Integrates You.com capabilities into agentic workflows — Claude, OpenAI, Vercel AI SDK, and Teams.ai. TypeScript/Python. |
+| 5 | [addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills) | Addy Osmani (Google) | ⭐ 2.6k | WCAG 2.2 anchored quality and accessibility guidance with real ARIA, contrast, and web performance patterns. |
+| 6 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | K-Dense AI | ⭐ 20k | Research, science, engineering, bioinformatics, drug discovery, materials science, and data analysis skills. |
+| 7 | [agentskills/agentskills](https://github.com/agentskills/agentskills) | agentskills.io | ⭐ 18k | The official Agent Skills specification, SDK, and reference examples maintained by Anthropic. |
+| 8 | [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) | OthmanAdi | ⭐ 20k | Manus-style persistent markdown planning skill — document-driven workflow with structured task decomposition. |
+| 9 | [wormhole-foundation/blockchain-interop](https://github.com/wormhole-foundation/blockchain-interop) | Wormhole Foundation | ⭐ | Cross-chain blockchain interoperability skills covering NTT, CCTP, Connect, Messaging, and Settlement. |
+| 10 | [arpitg1304/robotics-agent-skills](https://github.com/arpitg1304/robotics-agent-skills) | arpitg1304 | ⭐ 190 | Production-grade robotics skills for ROS1/ROS2, SOLID principles, design patterns, and testing. |
+| 11 | [machina-sports/sports-skills](https://github.com/machina-sports/sports-skills) | Machina Sports | ⭐ 95 | Live sports data and prediction market skills for Football, F1, Kalshi, and Polymarket — zero API keys required. |
+| 12 | [Agents365-ai/drawio-skill](https://github.com/Agents365-ai/drawio-skill) | Agents365 | ⭐ 1.1k | Generate professional draw.io diagrams from natural language and export to PNG/SVG/PDF. |
+| 13 | [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills) | sickn33 | ⭐ 36k | Installable library of 1,400+ agentic skills with CLI installer, bundles, and official/community collections. Compatible with Claude Code, Cursor, Codex, Gemini CLI, and more. |
+| 14 | [automazeio/ccpm](https://github.com/automazeio/ccpm) | Automazeio | ⭐ 8k | AI-powered project management skills using GitHub Issues and Git worktrees for parallel agent execution. |
+| 15 | [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills) | mukul975 | ⭐ 5.9k | 754 structured cybersecurity skills mapped to MITRE ATT&CK, NIST CSF 2.0, ATLAS, D3FEND — 26 security domains. |
+| 16 | [new-silvermoon/awesome-android-agent-skills](https://github.com/new-silvermoon/awesome-android-agent-skills) | new-silvermoon | ⭐ 784 | Standardized agent skills for modern Android development — Kotlin, Jetpack Compose, and best practices. |
+| 17 | [hoodini/ai-agents-skills](https://github.com/hoodini/ai-agents-skills) | Yuval Avidani | ⭐ 201 | Curated collection of specialized skills for Claude Code, GitHub Copilot, Cursor, and Windsurf. |
+| 18 | [youdotcom-oss/agent-skills](https://github.com/youdotcom-oss/agent-skills) | You.com | ⭐ | Integrates You.com capabilities into agentic workflows — Claude, OpenAI, Vercel AI SDK, and Teams.ai. TypeScript/Python. |
+| 19 | [shadcn-ui/ui](https://github.com/shadcn-ui/ui) | shadcn | ⭐ 121.9k | Official shadcn/ui + Radix reference library and guidance for components, CLI setup, theming, and registry authoring. |
+| 20 | [rampstackco/claude-skills](https://github.com/rampstackco/claude-skills) | Ramp | ⭐ 657 | Accessibility audit and quality workflows anchored around structured frontend testing and audit playbooks. |
+| 21 | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) | GreenSock | ⭐ 14.2k | Official GSAP skill with authoritative guidance for animation timing, easing, and timeline workflows. |
+| 22 | [freshtechbro/claudedesignskills](https://github.com/freshtechbro/claudedesignskills) | freshtechbro | ⭐ 772 | Motion, Framer Motion, Layout animations, shared-element transitions, and React Three Fiber guidance. |
+| 23 | [tsogjavklann/awwwards-3d](https://github.com/tsogjavklann/awwwards-3d) | tsogjavklann | ⭐ 11 | Lenis-driven 3D showcase patterns with tested three.js + GSAP + Lenis version pins and examples. |
+| 24 | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | nextlevelbuilder | ⭐ | UI/UX Pro Max guidance for polished multi-platform interface design and product thinking. |
 
 ### Initializing submodules
 
